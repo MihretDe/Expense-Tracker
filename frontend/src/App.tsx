@@ -8,11 +8,11 @@ function App() {
   if (!isAuthenticated)
     return <div>Please log in to access the application.</div>;
   return (
-      <>
+      <div >
       <h1>Welcome, {user?.name || "User"}!</h1>
       <LoginButton />
       <LogoutButton />
-      </>  
+      </div>  
       
    
   );
