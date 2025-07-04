@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Auth0Provider } from '@auth0/auth0-react'
 import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -18,8 +19,9 @@ root.render(
     authorizationParams={{ redirect_uri: window.location.origin }}
   >
     <React.StrictMode>
-    <AuthProvider>
-      <App />
+      <AuthProvider>
+        <BrowserRouter><App /></BrowserRouter>
+        
       </AuthProvider>
     </React.StrictMode>
   </Auth0Provider>

@@ -1,20 +1,18 @@
-import LoginButton from "./auth/LoginButton";
-import LogoutButton from "./auth/LogoutButton";
 import { useAuthContext } from "./context/AuthContext";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  const {user,isAuthenticated, isLoading } = useAuthContext();
+  const { user, isAuthenticated, isLoading } = useAuthContext();
+
   if (isLoading) return <div>Loading...</div>;
+
   if (!isAuthenticated)
     return <div>Please log in to access the application.</div>;
+
   return (
-      <div >
-      <h1>Welcome, {user?.name || "User"}!</h1>
-      <LoginButton />
-      <LogoutButton />
-      </div>  
-      
-   
+    <div>
+      <AppRoutes />
+    </div>
   );
 }
 
