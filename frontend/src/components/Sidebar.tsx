@@ -3,11 +3,11 @@ import {
   CreditCard,
   FileText,
   Settings,
-  LogOut,
   X,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import clsx from "clsx";
+import LogoutButton from "../auth/LogoutButton";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div>
           <div className="flex justify-between items-center mb-6 pl-2">
-            <h1 className="text-xl font-bold">Maglo.</h1>
+            <h1 className="text-xl font-bold">Expense Tracker</h1>
             <button className="md:hidden" onClick={onClose}>
               <X className="w-5 h-5 text-gray-500" />
             </button>
@@ -71,11 +71,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ))}
           </nav>
         </div>
-
-        <button className="flex items-center gap-3 px-4 py-2 text-gray-600 text-sm hover:bg-gray-100 rounded-lg w-full">
-          <LogOut className="w-5 h-5" />
-          Logout
-        </button>
+        <LogoutButton/>
       </div>
     </>
   );
