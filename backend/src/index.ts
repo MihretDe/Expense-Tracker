@@ -2,11 +2,12 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
-import categoryRoutes from "./routes/category.routes";
-import transactionRoutes from "./routes/transaction.routes";
-import userRoutes from "./routes/user.routes";
+import categoryRoutes from "./routes/category.routes.js";
+import transactionRoutes from "./routes/transaction.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 app.use(cors());
