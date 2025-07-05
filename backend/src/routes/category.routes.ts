@@ -3,7 +3,7 @@ import {
   createCategory,
   getCategories,
   deleteCategory,
-} from "../controllers/category.controller"
+} from "../controllers/category.controller.js"
 
 const router = Router();
 

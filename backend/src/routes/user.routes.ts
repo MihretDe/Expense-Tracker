@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   createUser,
   getUserProfile,
-} from "../controllers/user.controller";
+} from "../controllers/user.controller.js";
 
 const router = Router();
 
