@@ -1,4 +1,5 @@
 import { useAuth0, User } from "@auth0/auth0-react";
+import axios from "axios";
 import {
   createContext,
   ReactNode,
@@ -40,34 +41,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     () => sessionStorage.getItem("auth_token") || null
   );
 
-  const [user, setUser] = useState<User | undefined>(() => {
+  const user = useState<User | undefined>(() => {
     const stored = sessionStorage.getItem("auth_user");
     return stored ? JSON.parse(stored) : undefined;
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      getAccessTokenSilently()
-        .then((fetchedToken) => {
-          sessionStorage.setItem("auth_token", fetchedToken);
-          setToken(fetchedToken);
-        })
-        .catch(() => {
-          sessionStorage.removeItem("auth_token");
-          setToken(null);
-        });
+    const saveUserToBackend = async () => {
+      try {
+        if (!isAuthenticated || !auth0User) return;
 
-      if (auth0User) {
-        sessionStorage.setItem("auth_user", JSON.stringify(auth0User));
-        setUser(auth0User);
+        const token = await getAccessTokenSilently();
+
+        // Check if already saved in session to avoid re-sending
+        if (sessionStorage.getItem("user_synced") === "true") return;
+
+        await axios.post(
+          "http://localhost:5000/api/users",
+          {
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            name: auth0User.name,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("✅ User synced with backend");
+
+        // Mark user as synced to prevent re-posting on every refresh
+        sessionStorage.setItem("user_synced", "true");
+      } catch (err) {
+        console.error("❌ Failed to sync user", err);
       }
-    } else {
-      sessionStorage.removeItem("auth_token");
-      sessionStorage.removeItem("auth_user");
-      setToken(null);
-      setUser(undefined);
-    }
-  }, [isAuthenticated, getAccessTokenSilently, auth0User]);
+    };
+
+    saveUserToBackend();
+  }, [isAuthenticated, auth0User, getAccessTokenSilently]);
+
 
   return (
     <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading }}>
