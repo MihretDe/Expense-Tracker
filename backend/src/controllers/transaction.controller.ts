@@ -22,7 +22,7 @@ export const createTransaction = async (req: Request, res: Response) => {
 
 export const getTransactions = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.query;
+    const userId = (req as any).auth?.payload?.sub;
 
     const transactions = await Transaction.find({
       userId: userId,
@@ -36,7 +36,7 @@ export const getTransactions = async (req: Request, res: Response) => {
 
 export const updateTransaction = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } =(req as any).auth?.payload?.sub;
     const updateData = req.body;
 
     const transaction = await Transaction.findByIdAndUpdate(id, updateData, {
@@ -55,7 +55,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
 export const deleteTransaction = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = (req as any).auth?.payload?.sub;
 
     const deleted = await Transaction.findByIdAndDelete(id);
 
