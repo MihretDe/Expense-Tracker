@@ -37,11 +37,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     getAccessTokenSilently,
   } = useAuth0();
 
+  console.log("🔍 Auth0 User:", auth0User);
+
   const [token, setToken] = useState<string | null>(
     () => sessionStorage.getItem("auth_token") || null
   );
 
-  const user = useState<User | undefined>(() => {
+  const [user, setUser] = useState<User | undefined>(() => {
     const stored = sessionStorage.getItem("auth_user");
     return stored ? JSON.parse(stored) : undefined;
   });
@@ -52,6 +54,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (!isAuthenticated || !auth0User) return;
 
         const token = await getAccessTokenSilently();
+        setToken(token);
+        setUser(auth0User);
 
         // Check if already saved in session to avoid re-sending
         if (sessionStorage.getItem("user_synced") === "true") return;
@@ -61,7 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           {
             auth0Id: auth0User.sub,
             email: auth0User.email,
-            name: auth0User.name,
+            name: auth0User.given_name,
           },
           {
             headers: {
