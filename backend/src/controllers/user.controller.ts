@@ -25,11 +25,11 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUserProfile = async (req: Request, res: Response):Promise<void> => {
   try {
     const { auth0Id } = req.params;
-    const { name, date, mobilePhone } = req.body;
+    const { name,lastName, date, mobilePhone } = req.body;
 
     const user = await User.findOneAndUpdate(
       { auth0Id },
-      { name, date, mobilePhone },
+      { name, lastName, date, mobilePhone },
       { new: true }
     );
 
@@ -45,14 +45,14 @@ export const updateUserProfile = async (req: Request, res: Response):Promise<voi
   }
 };
 
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: Request, res: Response):Promise<void> => {
   try {
     const { auth0Id } = req.params;
 
     const user = await User.findOne({ auth0Id });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+       res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json(user);
