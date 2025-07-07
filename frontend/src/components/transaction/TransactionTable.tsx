@@ -2,8 +2,20 @@ import { useMemo, useState } from "react";
 import { getTransactionsColumns } from "../dashboard/TransactionColumns";
 import Table from "../Table";
 import { Transaction } from "../../types/transaction";
-import { Box, Typography, Button, Stack } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import axios from "axios";
 
 const data: Transaction[] = [
   {
@@ -65,6 +77,42 @@ export default function TransactionTable({
   // Unique categories for filter dropdown
   const categories = Array.from(new Set(data.map((d) => d.category)));
 
+  // Add Transaction dialog state
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    amount: "",
+    type: "",
+    category: "",
+    date: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Add Transaction handler
+  const handleAdd = async () => {
+    setLoading(true);
+    try {
+      // Adjust API URL as needed
+      await axios.post(`${process.env.REACT_APP_API_URL}/transactions`, {
+        ...form,
+        amount: Number(form.amount),
+      });
+      setAddOpen(false);
+      setForm({
+        title: "",
+        amount: "",
+        type: "",
+        category: "",
+        date: "",
+      });
+      // Optionally: refresh table data here
+    } catch (err) {
+      // Handle error (show toast, etc.)
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -83,16 +131,14 @@ export default function TransactionTable({
         <Typography variant="h5" fontWeight="bold">
           Transactions
         </Typography>
-        {onAddTransaction && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={onAddTransaction}
-          >
-            Add Transaction
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => setAddOpen(true)}
+        >
+          Add Transaction
+        </Button>
       </Stack>
       <Box className="flex gap-4 mb-4">
         <Box>
@@ -143,6 +189,69 @@ export default function TransactionTable({
         </Box>
       </Box>
       <Table data={filteredData} columns={columns} />
+
+      <Dialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Add Transaction</DialogTitle>
+        <DialogContent
+          sx={{
+            mt: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <TextField
+            label="Title"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            fullWidth
+          />
+          <TextField
+            label="Amount"
+            type="number"
+            value={form.amount}
+            onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+            fullWidth
+          />
+          <TextField
+            label="Type"
+            select
+            value={form.type}
+            onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+            fullWidth
+          >
+            <MenuItem value="income">Income</MenuItem>
+            <MenuItem value="expense">Expense</MenuItem>
+          </TextField>
+          <TextField
+            label="Category"
+            value={form.category}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, category: e.target.value }))
+            }
+            fullWidth
+          />
+          <TextField
+            label="Date"
+            type="date"
+            value={form.date}
+            onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddOpen(false)}>Cancel</Button>
+          <Button onClick={handleAdd} variant="contained" disabled={loading}>
+            {loading ? "Adding..." : "Add"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
