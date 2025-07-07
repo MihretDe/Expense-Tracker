@@ -19,6 +19,8 @@ import { useAuthContext } from "../../context/AuthContext";
 import TransModal from "./TransModal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 type Category = {
   _id: string;
@@ -32,6 +34,8 @@ export default function TransactionTable() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Fetch MongoDB user _id using Auth0 sub
   useEffect(() => {
@@ -297,10 +301,11 @@ export default function TransactionTable() {
       }}
     >
       <Stack
-        direction="row"
+        direction={isMobile ? "column" : "row"}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={isMobile ? "stretch" : "center"}
         mb={3}
+        spacing={isMobile ? 2 : 0}
       >
         <Typography variant="h5" fontWeight="bold">
           Transactions
@@ -319,18 +324,26 @@ export default function TransactionTable() {
             });
             setAddOpen(true);
           }}
+          sx={isMobile ? { width: "100%" } : {}}
         >
           Add Transaction
         </Button>
       </Stack>
-      <Box className="flex gap-4 mb-4">
+      <Box
+        className="gap-4 mb-4"
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: 2,
+        }}
+      >
         <Box>
           <label className="block text-sm mb-1" style={{ color: "black" }}>
             Category
           </label>
           <select
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
@@ -350,7 +363,7 @@ export default function TransactionTable() {
           </label>
           <select
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
@@ -366,7 +379,7 @@ export default function TransactionTable() {
           <input
             type="text"
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             placeholder="e.g. 2024-07-04"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
