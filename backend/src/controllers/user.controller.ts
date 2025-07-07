@@ -85,7 +85,6 @@ export const getUserBalance = async (req: Request, res: Response) => {
     const userId = req.params.id;
 
     const transactions = await Transaction.find({ userId });
-    console.log("🔍 Transactions for user:", userId, transactions);
 
     const income = transactions
       .filter((t) => t.type === "income")

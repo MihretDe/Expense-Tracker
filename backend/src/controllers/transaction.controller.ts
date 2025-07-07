@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Transaction from "../models/Transaction.js";
-import User from "../models/User.js";
 import mongoose from "mongoose";
 
 export const createTransaction = async (req: Request, res: Response) => {
