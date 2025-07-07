@@ -1,33 +1,36 @@
 import { Request, Response } from "express";
 import Category from "../models/Category.js";
+import mongoose from "mongoose";
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name, type, userId } = req.body;
 
-    const category = new Category({
+    const newCategoryData: any = {
       name,
       type,
-      userId: userId || null,
       isDefault: !userId,
-    });
+    };
+
+    if (userId) {
+      newCategoryData.userId = new mongoose.Types.ObjectId(userId);
+    }
+
+    const category = new Category(newCategoryData);
 
     await category.save();
     res.status(201).json(category);
   } catch (error) {
+    console.log("CREATE CATEGORY ERROR:", error);
     res.status(500).json({ error: (error as Error).message });
   }
 };
-
 export const getCategories = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
 
     const categories = await Category.find({
-      $or: [
-        { isDefault: true },
-        { userId: userId || null },
-      ],
+      $or: [{ isDefault: true }, { userId: userId || null }],
     });
 
     res.status(200).json(categories);
