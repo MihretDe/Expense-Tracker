@@ -16,15 +16,22 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
-import TransModal from "./TransModal"
+import TransModal from "./TransModal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+type Category = {
+  _id: string;
+  name: string;
+  // ...other fields if needed
+};
 
 export default function TransactionTable() {
   const { user, token } = useAuthContext();
   const [mongoUserId, setMongoUserId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Fetch MongoDB user _id using Auth0 sub
   useEffect(() => {
@@ -69,6 +76,27 @@ export default function TransactionTable() {
     };
     fetchTransactions();
   }, [mongoUserId, token]);
+
+  // Fetch categories for modal
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL;
+        const params = mongoUserId ? { userId: mongoUserId } : {};
+        const res = await axios.get(`${apiUrl}/categories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        });
+        setCategories(res.data || []);
+      } catch (err) {
+        toast.error("Failed to load categories");
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, [token, mongoUserId]);
 
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -249,9 +277,6 @@ export default function TransactionTable() {
     );
   });
 
-  // Unique categories for filter dropdown
-  const categories = Array.from(new Set(transactions.map((d) => d.category)));
-
   const columns = useMemo(
     () =>
       getTransactionsColumns({
@@ -310,11 +335,13 @@ export default function TransactionTable() {
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="">All</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+            {Array.from(new Set(transactions.map((d) => d.category))).map(
+              (cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              )
+            )}
           </select>
         </Box>
         <Box>
@@ -362,6 +389,7 @@ export default function TransactionTable() {
         onClose={() => setAddOpen(false)}
         onSubmit={handleAdd}
         isEdit={false}
+        categories={categories} // <-- pass categories
       />
       <TransModal
         open={editOpen}
@@ -371,6 +399,7 @@ export default function TransactionTable() {
         onClose={() => setEditOpen(false)}
         onSubmit={handleEditSave}
         isEdit={true}
+        categories={categories} // <-- pass categories
       />
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
         <DialogTitle>Delete Transaction</DialogTitle>

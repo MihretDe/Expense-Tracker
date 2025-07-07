@@ -9,6 +9,12 @@ import {
   Button,
 } from "@mui/material";
 
+// Add Category type
+type Category = {
+  _id: string;
+  name: string;
+};
+
 interface TransModalProps {
   open: boolean;
   loading: boolean;
@@ -23,6 +29,7 @@ interface TransModalProps {
   onClose: () => void;
   onSubmit: () => void;
   isEdit?: boolean;
+  categories: Category[]; // <-- add categories prop
 }
 
 export default function TransModal({
@@ -33,6 +40,7 @@ export default function TransModal({
   onClose,
   onSubmit,
   isEdit = false,
+  categories,
 }: TransModalProps) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -72,10 +80,27 @@ export default function TransModal({
         </TextField>
         <TextField
           label="Category"
+          select
           value={form.category}
           onChange={(e) => onChange("category", e.target.value)}
           fullWidth
-        />
+          SelectProps={{
+            MenuProps: {
+              PaperProps: {
+                style: {
+                  maxHeight: 100, // set max height for dropdown
+                  overflowY: "auto",
+                },
+              },
+            },
+          }}
+        >
+          {categories.map((cat) => (
+            <MenuItem key={cat._id} value={cat.name}>
+              {cat.name}
+            </MenuItem>
+          ))}
+        </TextField>
         <TextField
           label="Date"
           type="date"
