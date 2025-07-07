@@ -16,15 +16,26 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
-import TransModal from "./TransModal"
+import TransModal from "./TransModal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+
+type Category = {
+  _id: string;
+  name: string;
+  // ...other fields if needed
+};
 
 export default function TransactionTable() {
   const { user, token } = useAuthContext();
   const [mongoUserId, setMongoUserId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Fetch MongoDB user _id using Auth0 sub
   useEffect(() => {
@@ -69,6 +80,27 @@ export default function TransactionTable() {
     };
     fetchTransactions();
   }, [mongoUserId, token]);
+
+  // Fetch categories for modal
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL;
+        const params = mongoUserId ? { userId: mongoUserId } : {};
+        const res = await axios.get(`${apiUrl}/categories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        });
+        setCategories(res.data || []);
+      } catch (err) {
+        toast.error("Failed to load categories");
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, [token, mongoUserId]);
 
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -249,9 +281,6 @@ export default function TransactionTable() {
     );
   });
 
-  // Unique categories for filter dropdown
-  const categories = Array.from(new Set(transactions.map((d) => d.category)));
-
   const columns = useMemo(
     () =>
       getTransactionsColumns({
@@ -272,10 +301,11 @@ export default function TransactionTable() {
       }}
     >
       <Stack
-        direction="row"
+        direction={isMobile ? "column" : "row"}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={isMobile ? "stretch" : "center"}
         mb={3}
+        spacing={isMobile ? 2 : 0}
       >
         <Typography variant="h5" fontWeight="bold">
           Transactions
@@ -294,27 +324,37 @@ export default function TransactionTable() {
             });
             setAddOpen(true);
           }}
+          sx={isMobile ? { width: "100%" } : {}}
         >
           Add Transaction
         </Button>
       </Stack>
-      <Box className="flex gap-4 mb-4">
+      <Box
+        className="gap-4 mb-4"
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: 2,
+        }}
+      >
         <Box>
           <label className="block text-sm mb-1" style={{ color: "black" }}>
             Category
           </label>
           <select
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="">All</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+            {Array.from(new Set(transactions.map((d) => d.category))).map(
+              (cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              )
+            )}
           </select>
         </Box>
         <Box>
@@ -323,7 +363,7 @@ export default function TransactionTable() {
           </label>
           <select
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
@@ -339,7 +379,7 @@ export default function TransactionTable() {
           <input
             type="text"
             className="border rounded px-2 py-1"
-            style={{ color: "black" }}
+            style={{ color: "black", width: isMobile ? "100%" : undefined }}
             placeholder="e.g. 2024-07-04"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
@@ -362,6 +402,7 @@ export default function TransactionTable() {
         onClose={() => setAddOpen(false)}
         onSubmit={handleAdd}
         isEdit={false}
+        categories={categories} // <-- pass categories
       />
       <TransModal
         open={editOpen}
@@ -371,6 +412,7 @@ export default function TransactionTable() {
         onClose={() => setEditOpen(false)}
         onSubmit={handleEditSave}
         isEdit={true}
+        categories={categories} // <-- pass categories
       />
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
         <DialogTitle>Delete Transaction</DialogTitle>
