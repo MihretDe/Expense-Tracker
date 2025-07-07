@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           {
             auth0Id: auth0User.sub,
             email: auth0User.email,
-            name: auth0User.given_name,
+            name: auth0User.given_name || auth0User.name,
           },
           {
             headers: {
