@@ -3,29 +3,38 @@ import User from "../models/User.js";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
+    console.log("📥 Incoming user:", req.body);
     const { auth0Id, email, name } = req.body;
 
-    let user = await User.findOne({ auth0Id });
-
-    if (!user) {
-      user = new User({
-        auth0Id,
-        email,
-        name,
-      });
-      await user.save();
+    if (!auth0Id || !email || !name) {
+      console.error("❌ Missing fields in request");
+       res.status(400).json({ message: "Missing fields" });
     }
 
-    res.status(201).json(user);
+    let user = await User.findOne({ auth0Id });
+    console.log("🔍 Existing user:", user);
+
+    if (!user) {
+      user = new User({ auth0Id, email, name });
+      await user.save();
+      console.log("✅ New user created");
+    }
+
+     res.status(201).json(user);
   } catch (error) {
+    console.error("❌ Error in createUser:", error);
     res.status(500).json({ error: (error as Error).message });
   }
 };
 
-export const updateUserProfile = async (req: Request, res: Response):Promise<void> => {
+
+export const updateUserProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { auth0Id } = req.params;
-    const { name,lastName, date, mobilePhone } = req.body;
+    const { name, lastName, date, mobilePhone } = req.body;
 
     const user = await User.findOneAndUpdate(
       { auth0Id },
@@ -35,17 +44,23 @@ export const updateUserProfile = async (req: Request, res: Response):Promise<voi
 
     if (!user) {
       res.status(404).json({ message: "User not found" });
+      return;
     }
 
-    res
+     res
       .status(200)
       .json({ message: "User profile updated successfully", user });
+      return;
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+     res.status(500).json({ error: (error as Error).message });
+     return;
   }
 };
 
-export const getUserProfile = async (req: Request, res: Response):Promise<void> => {
+export const getUserProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { auth0Id } = req.params;
 
@@ -53,10 +68,13 @@ export const getUserProfile = async (req: Request, res: Response):Promise<void> 
 
     if (!user) {
        res.status(404).json({ message: "User not found" });
+       return;
     }
 
-    res.status(200).json(user);
+     res.status(200).json(user);
+     return
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+     res.status(500).json({ error: (error as Error).message });
+     return;
   }
 };
