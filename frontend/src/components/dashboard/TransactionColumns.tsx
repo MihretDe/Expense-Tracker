@@ -1,16 +1,20 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { MoveDown, MoveUp, Pencil, Trash2 } from "lucide-react";
+import { MoveDown, MoveUp } from "lucide-react";
 import { Transaction } from "../../types/transaction";
-
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Tooltip, IconButton } from "@mui/material";
 
 interface ColumnOptions {
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (employeeId: string) => void;
+  withTooltip?: boolean;
 }
 
 export function getTransactionsColumns({
   onEdit,
   onDelete,
+  withTooltip = false,
 }: ColumnOptions): ColumnDef<Transaction>[] {
   return [
     {
@@ -66,20 +70,45 @@ export function getTransactionsColumns({
         const emp = row.original;
         return (
           <div className="flex justify-center gap-2">
-            <button
-              onClick={() => onEdit?.(emp)}
-              className="text-blue-600 hover:text-blue-800"
-              title="Edit"
-            >
-              <Pencil size={18} />
-            </button>
-            <button
-              onClick={() => onDelete?.(emp._id)}
-              className="text-red-600 hover:text-red-800"
-              title="Delete"
-            >
-              <Trash2 size={18} />
-            </button>
+            {withTooltip ? (
+              <>
+                <Tooltip title="Edit">
+                  <IconButton
+                    size="small"
+                    onClick={() => onEdit?.(emp)}
+                    sx={{ color: "black" }}
+                  >
+                    <EditIcon fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <IconButton
+                    size="small"
+                    onClick={() => onDelete?.(emp._id)}
+                    sx={{ color: "black" }}
+                  >
+                    <DeleteIcon fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={() => onEdit?.(emp)}
+                  sx={{ color: "black" }}
+                >
+                  <EditIcon fontSize="medium" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => onDelete?.(emp._id)}
+                  sx={{ color: "black" }}
+                >
+                  <DeleteIcon fontSize="medium" />
+                </IconButton>
+              </>
+            )}
           </div>
         );
       },

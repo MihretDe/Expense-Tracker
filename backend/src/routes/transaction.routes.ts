@@ -10,7 +10,8 @@ const router = Router();
 
 router.post("/", createTransaction);
 router.get("/", getTransactions);
-// router.put("/:id", updateTransaction);
-// router.delete("/:id", deleteTransaction);
+router.put("/:id", updateTransaction);
+router.patch("/:id", updateTransaction); // <-- add this line
+router.delete("/:id", deleteTransaction);
 
 export default router;

@@ -5,9 +5,6 @@ import CategoryTab from "../components/transaction/CategoryTab";
 
 
 export default function TransactionPage() {
-  const handleAddTransaction = () => {
-    console.log("Add Transaction clicked");
-  };
 
   const [tab, setTab] = React.useState(0);
 
@@ -19,7 +16,7 @@ export default function TransactionPage() {
       </Tabs>
 
       {tab === 0 && (
-        <TransactionTable onAddTransaction={handleAddTransaction} />
+        <TransactionTable  />
       )}
 
       {tab === 1 && <CategoryTab />}
