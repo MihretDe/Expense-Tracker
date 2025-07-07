@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (sessionStorage.getItem("user_synced") === "true") return;
 
         await axios.post(
-          "http://localhost:5000/api/users",
+          `${process.env.REACT_APP_API_URL}/users`,
           {
             auth0Id: auth0User.sub,
             email: auth0User.email,

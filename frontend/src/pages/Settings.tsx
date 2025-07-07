@@ -60,11 +60,15 @@ export default function Settings() {
     try {
       if (!user?.sub || !token) return;
 
-      await axios.patch(`http://localhost:5000/api/users/${user.sub}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/users/${user.sub}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       toast.success("Profile updated");
     } catch (error) {
