@@ -16,7 +16,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
-import TransModal from "./TransModal";
+import TransModal from "./TransModal"
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Stack,
@@ -17,19 +17,105 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import axios from "axios";
+import { useAuthContext } from "../../context/AuthContext";
+import { toast } from "react-toastify";
+
+type Category = {
+  _id: string;
+  name: string;
+  userId?: string;
+  type?: string;
+  isDefault?: boolean;
+  __v?: number;
+};
 
 export default function CategoryTab() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const { user, token } = useAuthContext();
+  const [categories, setCategories] = useState<Category[]>([]);
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mongoUserId, setMongoUserId] = useState<string | null>(null);
 
-  const handleAddCategory = () => {
+  // Fetch categories from API (default + user)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL;
+        // Send userId as a query param if available
+        const params = mongoUserId ? { userId: mongoUserId } : {};
+        const res = await axios.get(`${apiUrl}/categories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        });
+        setCategories(res.data || []);
+      } catch (err) {
+        toast.error("Failed to load categories");
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, [token, mongoUserId]);
+
+  // Fetch MongoDB user _id using Auth0 sub
+  useEffect(() => {
+    const fetchMongoUserId = async () => {
+      if (!user?.sub || !token) return;
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL;
+        const res = await axios.get(`${apiUrl}/users/${user.sub}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setMongoUserId(res.data._id);
+      } catch (err) {
+        setMongoUserId(null);
+      }
+    };
+    fetchMongoUserId();
+  }, [user?.sub, token]);
+
+  // Add category handler
+  const handleAddCategory = async () => {
     const trimmed = newCategory.trim();
-    if (trimmed && !categories.includes(trimmed)) {
-      setCategories((prev) => [...prev, trimmed]);
+    if (!trimmed || categories.some((cat) => cat.name === trimmed)) return;
+    setLoading(true);
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL;
+      const res = await axios.post(
+        `${apiUrl}/categories`,
+        {
+          name: trimmed,
+          userId: mongoUserId, // send MongoDB ObjectId
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Fetch categories again to ensure the new one is included
+      const params = mongoUserId ? { userId: mongoUserId } : {};
+      const refreshed = await axios.get(`${apiUrl}/categories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params,
+      });
+      setCategories(refreshed.data || []);
+      toast.success("Category added");
+    } catch (err) {
+      console.log("Error adding category:", err);
+      toast.error("Failed to add category");
+    } finally {
+      setNewCategory("");
+      setAddCatOpen(false);
+      setLoading(false);
     }
-    setNewCategory("");
-    setAddCatOpen(false);
   };
 
   return (
@@ -61,7 +147,7 @@ export default function CategoryTab() {
 
       <List sx={{ bgcolor: "background.default", borderRadius: 1 }}>
         {categories.map((cat, index) => (
-          <Box key={cat}>
+          <Box key={cat._id || cat.name}>
             <ListItem
               sx={{
                 "&:hover": {
@@ -69,7 +155,7 @@ export default function CategoryTab() {
                 },
               }}
             >
-              <ListItemText primary={cat} />
+              <ListItemText primary={cat.name} />
             </ListItem>
             {index < categories.length - 1 && <Divider />}
           </Box>
@@ -105,13 +191,15 @@ export default function CategoryTab() {
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setAddCatOpen(false)}>Cancel</Button>
+          <Button onClick={() => setAddCatOpen(false)} disabled={loading}>
+            Cancel
+          </Button>
           <Button
             onClick={handleAddCategory}
             variant="contained"
-            disabled={!newCategory.trim()}
+            disabled={!newCategory.trim() || loading}
           >
-            Add
+            {loading ? "Adding..." : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
