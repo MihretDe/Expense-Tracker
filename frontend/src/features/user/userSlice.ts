@@ -5,6 +5,7 @@ export interface User {
   _id?: string; // Optional for new users
   auth0Id: string;
   name: string;
+  lastName?: string;
   email: string;
   picture?: string;
   mobilePhone?: string;
@@ -21,6 +22,7 @@ interface UserState {
   user: User | null;
   userLoading: boolean;
   balanceLoading: boolean;
+  profileUpdating: boolean;
   error: string | null;
   balance: BalanceData;
 }
@@ -30,6 +32,7 @@ const initialState: UserState = {
   user: null,
   userLoading: false,
   balanceLoading: false,
+  profileUpdating: false,
   error: null,
   balance: {
     income: 0,
@@ -146,20 +149,17 @@ export const createOrGetUser = createAsyncThunk(
         })
 
         .addCase(updateUserProfile.pending, (state) => {
-          state.userLoading = true;
-          state.error = null;
+          state.profileUpdating = true;
         })
-        .addCase(
-          updateUserProfile.fulfilled,
-          (state, action: PayloadAction<User>) => {
-            state.user = action.payload;
-            state.userLoading = false;
-          }
-        )
+        .addCase(updateUserProfile.fulfilled, (state, action) => {
+          state.profileUpdating = false;
+          state.user = action.payload;
+        })
         .addCase(updateUserProfile.rejected, (state, action) => {
-          state.userLoading = false;
+          state.profileUpdating = false;
           state.error = action.payload as string;
         })
+
         .addCase(fetchUser.pending, (state) => {
           if (!state.user) {
             state.userLoading = true;

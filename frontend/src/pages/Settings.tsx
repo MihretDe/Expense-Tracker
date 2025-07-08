@@ -49,12 +49,13 @@ export default function Settings() {
     if (!user?._id || !token) return;
     try {
       await dispatch(
-        updateUserProfile({
-          token,
-          userId: user._id,
-          data,
-        })
+        updateUserProfile({ token, userId: user._id, data })
       ).unwrap();
+
+      // ✅ Immediately re-fetch the latest user after update
+      if (auth0User && typeof auth0User.sub === "string") {
+        await dispatch(fetchUser({ token, auth0Id: auth0User.sub }));
+      }
 
       toast.success("Profile updated");
     } catch {
