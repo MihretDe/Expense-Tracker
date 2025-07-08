@@ -22,6 +22,11 @@ import { useAuthContext } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import {
+  fetchCategories,
+  createCategory,
+} from "../../features/category/categorySlice";
 type Category = {
   _id: string;
   name: string;
@@ -33,35 +38,14 @@ type Category = {
 
 export default function CategoryTab() {
   const { user, token } = useAuthContext();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const dispatch = useAppDispatch();
+  const categories = useAppSelector((state) => state.categories.items);
+  const loading = useAppSelector((state) => state.categories.loading);
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
-  const [loading, setLoading] = useState(false);
   const [mongoUserId, setMongoUserId] = useState<string | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // Fetch categories from API (default + user)
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const apiUrl = process.env.REACT_APP_API_URL;
-        // Send userId as a query param if available
-        const params = mongoUserId ? { userId: mongoUserId } : {};
-        const res = await axios.get(`${apiUrl}/categories`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params,
-        });
-        setCategories(res.data || []);
-      } catch (err) {
-        toast.error("Failed to load categories");
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, [token, mongoUserId]);
 
   // Fetch MongoDB user _id using Auth0 sub
   useEffect(() => {
@@ -82,42 +66,33 @@ export default function CategoryTab() {
     fetchMongoUserId();
   }, [user?.sub, token]);
 
+  // Fetch categories from Redux store
+  useEffect(() => {
+    if (token && mongoUserId) {
+      dispatch(fetchCategories({ token, userId: mongoUserId }));
+    }
+  }, [token, mongoUserId, dispatch]);
+
   // Add category handler
   const handleAddCategory = async () => {
     const trimmed = newCategory.trim();
     if (!trimmed || categories.some((cat) => cat.name === trimmed)) return;
-    setLoading(true);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL;
-      const res = await axios.post(
-        `${apiUrl}/categories`,
-        {
-          name: trimmed,
-          userId: mongoUserId, // send MongoDB ObjectId
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      await dispatch(
+        createCategory({
+          token: token!,
+          data: {
+            name: trimmed,
+            userId: mongoUserId ?? undefined, // ensure no null, only string or undefined
           },
-        }
-      );
-      // Fetch categories again to ensure the new one is included
-      const params = mongoUserId ? { userId: mongoUserId } : {};
-      const refreshed = await axios.get(`${apiUrl}/categories`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params,
-      });
-      setCategories(refreshed.data || []);
+        })
+      ).unwrap();
       toast.success("Category added");
     } catch (err) {
-      console.log("Error adding category:", err);
       toast.error("Failed to add category");
     } finally {
       setNewCategory("");
       setAddCatOpen(false);
-      setLoading(false);
     }
   };
 
