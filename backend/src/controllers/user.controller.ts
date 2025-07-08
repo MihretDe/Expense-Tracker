@@ -34,14 +34,12 @@ export const updateUserProfile = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { auth0Id } = req.params;
-    const { name, lastName, date, mobilePhone } = req.body;
-
-    const user = await User.findOneAndUpdate(
-      { auth0Id },
-      { name, lastName, date, mobilePhone },
-      { new: true }
-    );
+    const { id } = req.params;
+    const updates = req.body;
+    const user = await User.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
+   
 
     if (!user) {
       res.status(404).json({ message: "User not found" });

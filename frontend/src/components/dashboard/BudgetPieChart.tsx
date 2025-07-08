@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { PieChart, Pie, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { useAuthContext } from "../../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
+
 
 const COLORS = [
   "#8884d8",
@@ -16,57 +18,41 @@ const COLORS = [
   "#ffbb28",
 ];
 
-interface Transaction {
-  amount: number;
-  category: string;
-  type: "income" | "expense";
-}
-
 export default function BudgetPieChart({ userId }: { userId?: string }) {
   const { token } = useAuthContext();
+  const dispatch = useAppDispatch();
+  const transactions = useAppSelector((state) => state.transactions.items);
+
   const [chartData, setChartData] = useState<{ name: string; value: number }[]>(
     []
   );
 
+  // Fetch all transactions
   useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!token || !userId) return;
+    if (!token || !userId) return;
 
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/transactions/`,
-          {
-            params: { userId },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    dispatch(fetchTransactions({ token, userId }));
+  }, [token, userId, dispatch]);
 
-        const transactions: Transaction[] = res.data;
+  // Transform data for chart
+  useEffect(() => {
+    if (!transactions.length) return;
 
-        // Group by category
-        const categoryMap: Record<string, number> = {};
-        transactions.forEach((tx) => {
-          if (!categoryMap[tx.category]) {
-            categoryMap[tx.category] = 0;
-          }
-          categoryMap[tx.category] += tx.amount;
-        });
-
-        const formatted = Object.entries(categoryMap).map(([name, value]) => ({
-          name,
-          value,
-        }));
-
-        setChartData(formatted);
-      } catch (error) {
-        console.error("❌ Failed to fetch transaction data", error);
+    const categoryMap: Record<string, number> = {};
+    transactions.forEach((tx: Transaction) => {
+      if (!categoryMap[tx.category]) {
+        categoryMap[tx.category] = 0;
       }
-    };
+      categoryMap[tx.category] += tx.amount;
+    });
 
-    fetchTransactions();
-  }, [token, userId]);
+    const formatted = Object.entries(categoryMap).map(([name, value]) => ({
+      name,
+      value,
+    }));
+
+    setChartData(formatted);
+  }, [transactions]);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">

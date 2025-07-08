@@ -1,33 +1,21 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
+import { fetchUserBalance } from "../../features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 
 export default function BalanceOverviewCard({userId}: {userId: string | undefined}) {
   const { token } = useAuthContext();
-  const [total, setTotal] = useState(0);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.user);
+  const { totalBalance } = useAppSelector(
+      (state) => state.user.balance
+    );
   useEffect(() => {
-    const fetchIncomeExpense = async () => {
-      if (!userId) return;
-
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/users/${userId}/balance`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const { totalBalance } = res.data;
-        setTotal(totalBalance || 0);
-      } catch (error) {
-        console.error("❌ Failed to fetch income/expense summary", error);
+      if (token && userId) {
+        dispatch(fetchUserBalance({ token, userId: userId }));
       }
-    };
-
-    fetchIncomeExpense();
-  }, [userId, token]);
+    }, [user, token, dispatch]);
   return (
     <div
       className="rounded-2xl text-white shadow-lg relative overflow-hidden p-5 h-64 "
@@ -39,7 +27,7 @@ export default function BalanceOverviewCard({userId}: {userId: string | undefine
       <div className="flex justify-between items-start mb-5">
         <div>
           <p className="text-sm text-gray-200">Balance overview</p>
-          <h2 className="text-2xl font-bold mt-2 tracking-tight">${total}</h2>
+          <h2 className="text-2xl font-bold mt-2 tracking-tight">${totalBalance}</h2>
           
           <p className="text-xs text-gray-400">Combination of bank accounts</p>
         </div>

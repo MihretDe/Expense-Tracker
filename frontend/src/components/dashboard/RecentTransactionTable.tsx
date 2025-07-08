@@ -7,6 +7,8 @@ import { Category } from "../../types/category";
 import TransactionTable from "./TransactionTable";
 import EditTransactionModal from "./EditTransactionModal";
 import DeleteTransactionDialog from "./DeleteTransactionDialog";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import { deleteTransaction, fetchTransactions, updateTransaction } from "../../features/transaction/transactionSlice";
 
 export default function RecentTransactionTable({
   userId,
@@ -14,7 +16,10 @@ export default function RecentTransactionTable({
   userId?: string;
 }) {
   const { token } = useAuthContext();
-  const [data, setData] = useState<Transaction[]>([]);
+  const dispatch = useAppDispatch();
+  const data = useAppSelector((state) => state.transactions.items);
+ 
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,23 +31,13 @@ export default function RecentTransactionTable({
     title: "",
     amount: "",
     type: "",
-    category: "",
+    category: "income",
     date: "",
   });
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  const fetchTransactions = async () => {
-    try {
-      const res = await axios.get(`${apiUrl}/transactions/recent`, {
-        params: { userId, limit: 5 },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setData(res.data);
-    } catch (err) {
-      toast.error("Failed to load transactions");
-    }
-  };
+  
 
   const fetchCategories = async () => {
     try {
@@ -58,10 +53,11 @@ export default function RecentTransactionTable({
 
   useEffect(() => {
     if (token && userId) {
-      fetchTransactions();
+      dispatch(fetchTransactions({ token, userId, filters: { limit: 5 } }));
       fetchCategories();
     }
-  }, [token, userId]);
+  }, [token, userId, dispatch]);
+  
 
   const handleEdit = (tx: Transaction) => {
     setForm({
@@ -76,52 +72,64 @@ export default function RecentTransactionTable({
   };
 
   const handleEditSave = async () => {
-    if (!editId) return;
+    if (!editId || !token) return;
+
     setLoading(true);
     try {
-      await axios.put(
-        `${apiUrl}/transactions/${editId}`,
-        {
-          ...form,
-          amount: Number(form.amount),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await dispatch(
+        updateTransaction({
+          token,
+          id: editId,
+          data: {
+            ...form,
+            amount: Number(form.amount),
+            type: form.type as "income" | "expense",
+          },
+        })
+      ).unwrap();
+
       toast.success("Transaction updated");
       setEditOpen(false);
       setEditId(null);
-      await fetchTransactions();
+
+      // Refresh list after update
+      dispatch(
+        fetchTransactions({ token, userId: userId!, filters: { limit: 5 } })
+      );
     } catch {
       toast.error("Failed to update transaction");
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!deleteId) return;
+    if (!deleteId || !token) return;
+
     setLoading(true);
     try {
-      await axios.delete(`${apiUrl}/transactions/${deleteId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await dispatch(deleteTransaction({ token, id: deleteId })).unwrap();
+
       toast.success("Transaction deleted");
       setDeleteOpen(false);
       setDeleteId(null);
-      await fetchTransactions();
+
+      // Refresh list after delete
+      dispatch(
+        fetchTransactions({ token, userId: userId!, filters: { limit: 5 } })
+      );
     } catch {
       toast.error("Failed to delete transaction");
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <>

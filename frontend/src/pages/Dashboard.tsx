@@ -1,60 +1,49 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-
+import { useEffect } from "react";
 import BudgetPieChart from "../components/dashboard/BudgetPieChart";
 import RecentTransactionTable from "../components/dashboard/RecentTransactionTable";
 import SummaryCard from "../components/dashboard/SummaryCard";
 import WorkingCapitalChart from "../components/dashboard/WorkingCapitalChart";
-import { useAuthContext } from "../context/AuthContext";
 
+import { useAuthContext } from "../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
+import { fetchUser, fetchUserBalance } from "../features/user/userSlice";
+import { CircularProgress } from "@mui/material";
 
 export default function Dashboard() {
-  const { user, token } = useAuthContext();
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-
-  const [balanceData, setBalanceData] = useState({
-    income: 0,
-    expenses: 0,
-    totalBalance: 0,
-  });
+  const { user: auth0User, token } = useAuthContext();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.user);
+  const userLoading = useAppSelector((state) => state.user.userLoading);
+  const { income, expenses, totalBalance } = useAppSelector(
+    (state) => state.user.balance
+  );
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        if (!user || !token) return;
+    if (auth0User?.sub && token) {
+      dispatch(fetchUser({ token, auth0Id: auth0User.sub }));
+    }
+  }, [auth0User, token, dispatch]);
 
-        const userRes = await axios.get(
-          `${process.env.REACT_APP_API_URL}/users/${user.sub}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  useEffect(() => {
+    if (user && token && typeof user._id === "string") {
+      dispatch(fetchUserBalance({ token, userId: user._id }));
+    }
+  }, [user, token, dispatch]);
 
-        const fetchedUserId = userRes.data._id;
-        setUserId(fetchedUserId);
-        console.log(fetchedUserId)
-
-        const balanceRes = await axios.get(
-          `${process.env.REACT_APP_API_URL}/users/${fetchedUserId}/balance`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setBalanceData(balanceRes.data);
-      } catch (error) {
-        console.error("❌ Failed to fetch balance", error);
-      }
-    };
-
-    fetchBalance();
-  }, [user, token]);
-
-  const { income, expenses, totalBalance } = balanceData;
+  if (userLoading || !user) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 ">
@@ -79,14 +68,14 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 w-full gap-4">
         <div className="md:col-span-2">
-          <WorkingCapitalChart userId={userId} />
+          <WorkingCapitalChart userId={user._id} />
         </div>
         <div className="md:col-span-1">
-          <BudgetPieChart  userId={userId}/>
+          <BudgetPieChart userId={user._id} />
         </div>
       </div>
 
-      <RecentTransactionTable userId={userId} />
+      <RecentTransactionTable userId={user._id} />
     </div>
   );
 }

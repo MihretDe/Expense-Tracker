@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { useAuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
+import { fetchUser, updateUserProfile } from "../features/user/userSlice";
 
 interface UserProfile {
   name: string;
@@ -14,68 +16,52 @@ interface UserProfile {
 }
 
 export default function Settings() {
-  const { user, token } = useAuthContext();
-  const toastId = "profile-loaded";
+  const { token, user: auth0User } = useAuthContext();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.user);
+
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { isSubmitting },
   } = useForm<UserProfile>();
 
   // Fetch user data on mount
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!user?.sub || !token) return;
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/users/${user.sub}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        
-        const data = res.data;
+    if (auth0User?.sub && token) {
+      dispatch(fetchUser({ token, auth0Id: auth0User.sub }));
+    }
+  }, [auth0User, token, dispatch]);
 
-        // Format the date field if it exists
-        const formattedDate = data.date
-          ? new Date(data.date).toISOString().split("T")[0]
-          : "";
-        reset({...data,
-          date: formattedDate}); // Populate form
-      } catch (error) {
-        toast.error("Failed to load profile");
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, [token, reset]);
+  useEffect(() => {
+    if (user) {
+      const formattedDate = user.date
+        ? new Date(user.date).toISOString().split("T")[0]
+        : "";
+      reset({ ...user, date: formattedDate });
+    }
+  }, [user, reset]);
+  
 
   // Submit handler
   const onSubmit = async (data: UserProfile) => {
+    if (!user?._id || !token) return;
     try {
-      if (!user?.sub || !token) return;
-
-      await axios.patch(
-        `${process.env.REACT_APP_API_URL}/users/${user.sub}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await dispatch(
+        updateUserProfile({
+          token,
+          userId: user._id,
+          data,
+        })
+      ).unwrap();
 
       toast.success("Profile updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update profile");
-      console.error(error);
     }
   };
+  
 
   return (
     <div className="max-w-3xl mx-auto mt-10 px-6">

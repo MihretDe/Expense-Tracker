@@ -6,6 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import { Auth0Provider } from '@auth0/auth0-react'
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './app/store';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -19,10 +21,12 @@ root.render(
     authorizationParams={{ redirect_uri: window.location.origin }}
   >
     <React.StrictMode>
+    <Provider store={store}>
       <AuthProvider>
         <BrowserRouter><App /></BrowserRouter>
         
       </AuthProvider>
+      </Provider>
     </React.StrictMode>
   </Auth0Provider>
 );

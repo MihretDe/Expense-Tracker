@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import {
   AreaChart,
   Area,
@@ -12,69 +11,56 @@ import {
 } from "recharts";
 import { useAuthContext } from "../../context/AuthContext";
 import { format } from "date-fns";
+import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 
-type Transaction = {
+
+
+type ChartDataPoint = {
   date: string;
-  type: "income" | "expense";
-  amount: number;
+  income: number;
+  expense: number;
 };
 
 function transformData(raw: Transaction[]) {
   const grouped: Record<string, { income: number; expense: number }> = {};
 
   for (const tx of raw) {
-    const day = format(new Date(tx.date), "MMM dd"); // e.g., "Jul 07"
+    const day = format(new Date(tx.date), "MMM dd");
     if (!grouped[day]) {
       grouped[day] = { income: 0, expense: 0 };
     }
     grouped[day][tx.type] += tx.amount;
   }
 
-  // Convert to array sorted by date
   return Object.entries(grouped)
     .map(([date, values]) => ({ date, ...values }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
-
-export default function WorkingCapitalChart({userId}: {userId: string | undefined}) {
+export default function WorkingCapitalChart({
+  userId,
+}: {
+  userId: string | undefined;
+}) {
   const [range, setRange] = useState<"7d" | "30d">("7d");
-  type ChartDataPoint = {
-    date: string;
-    income: number;
-    expense: number;
-  };
-
   const [data, setData] = useState<ChartDataPoint[]>([]);
-  
-  const { user, token } = useAuthContext();
+
+  const { token } = useAuthContext();
+  const dispatch = useAppDispatch();
+  const transactions = useAppSelector((state) => state.transactions.items);
 
   useEffect(() => {
-    const fetchChartData = async () => {
-      if (!user || !token) return;
+    if (!userId || !token) return;
 
-      const period = range === "7d" ? "weekly" : "monthly";
+    const period = range === "7d" ? "weekly" : "monthly";
 
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/transactions/filter`,
-          {
-            params: { userId, period },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log("Chart data response:", res.data);
-        const transformed = transformData(res.data);
-        setData(transformed);
-      } catch (err) {
-        console.error("❌ Failed to fetch chart data", err);
-      }
-    };
+    dispatch(fetchTransactions({ token, userId, filters: { period } }));
+  }, [userId, token, range, dispatch]);
 
-    fetchChartData();
-  }, [range, user, token]);
+  useEffect(() => {
+    setData(transformData(transactions));
+  }, [transactions]);
 
   const handleExportCSV = () => {
     const rows = [

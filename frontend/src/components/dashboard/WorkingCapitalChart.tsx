@@ -10,6 +10,8 @@ import {
 } from "recharts";
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
 
 type ChartData = {
   date: string;
@@ -20,62 +22,42 @@ type ChartData = {
 export default function WorkingCapitalChart({ userId }: { userId?: string }) {
   const { token } = useAuthContext();
   const [data, setData] = useState<ChartData[]>([]);
+  const dispatch = useAppDispatch();
+  const transactions = useAppSelector((state) => state.transactions.items);
+
 
   useEffect(() => {
-    const fetchChartData = async () => {
-      if (!token || !userId) return;
-
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/transactions/filter`,
-          {
-            params: {
-              userId,
-              period: "weekly",
-            },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const rawTransactions = res.data;
-
-        // Group by date and sum income/expense
-        const groupedMap = new Map<string, ChartData>();
-
-        rawTransactions.forEach((tx: any) => {
-          const dateKey = new Date(tx.date).toISOString().split("T")[0]; // "YYYY-MM-DD"
-
-          if (!groupedMap.has(dateKey)) {
-            groupedMap.set(dateKey, {
-              date: dateKey,
-              income: 0,
-              expense: 0,
-            });
-          }
-
-          const group = groupedMap.get(dateKey)!;
-          if (tx.type === "income") {
-            group.income += tx.amount;
-          } else if (tx.type === "expense") {
-            group.expense += tx.amount;
-          }
-        });
-
-        const formatted = Array.from(groupedMap.values()).sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-
-        setData(formatted);
-        console.log("📊 Formatted Chart Data:", formatted);
-      } catch (err) {
-        console.error("❌ Failed to fetch working capital data", err);
-      }
-    };
-
-    fetchChartData();
+    if (!token || !userId) return;
+    dispatch(
+      fetchTransactions({ token, userId, filters: { period: "weekly" } })
+    );
   }, [token, userId]);
+  
+  useEffect(() => {
+    const groupedMap = new Map<string, ChartData>();
+
+    transactions.forEach((tx: Transaction) => {
+      const dateKey = new Date(tx.date).toISOString().split("T")[0];
+
+      if (!groupedMap.has(dateKey)) {
+        groupedMap.set(dateKey, { date: dateKey, income: 0, expense: 0 });
+      }
+
+      const group = groupedMap.get(dateKey)!;
+      if (tx.type === "income") {
+        group.income += tx.amount;
+      } else if (tx.type === "expense") {
+        group.expense += tx.amount;
+      }
+    });
+
+    const formatted = Array.from(groupedMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    setData(formatted);
+  }, [transactions]);
+  
 
   return (
     <div className="bg-white p-4 rounded-lg shadow h-auto">
