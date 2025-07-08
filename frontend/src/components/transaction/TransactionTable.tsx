@@ -218,7 +218,10 @@ export default function TransactionTable() {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return "";
                 return (
-                  <span style={{ fontSize: 16, color: "black" }}>
+                  <span
+                    className="text-black dark:text-gray-100"
+                    style={{ fontSize: 16 }}
+                  >
                     {format(date, "yyyy-MM-dd")}
                   </span>
                 );
@@ -276,12 +279,12 @@ export default function TransactionTable() {
         }}
       >
         <Box>
-          <label className="block text-sm mb-1" style={{ color: "black" }}>
+          <label className="block text-sm mb-1 text-black dark:text-gray-100">
             Category
           </label>
           <select
-            className="border rounded px-2 py-1"
-            style={{ color: "black", width: isMobile ? "100%" : undefined }}
+            className="border rounded px-2 py-1 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
+            style={{ width: isMobile ? "100%" : undefined }}
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
@@ -296,12 +299,12 @@ export default function TransactionTable() {
           </select>
         </Box>
         <Box>
-          <label className="block text-sm mb-1" style={{ color: "black" }}>
+          <label className="block text-sm mb-1 text-black dark:text-gray-100">
             Type
           </label>
           <select
-            className="border rounded px-2 py-1"
-            style={{ color: "black", width: isMobile ? "100%" : undefined }}
+            className="border rounded px-2 py-1 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
+            style={{ width: isMobile ? "100%" : undefined }}
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
@@ -311,13 +314,13 @@ export default function TransactionTable() {
           </select>
         </Box>
         <Box>
-          <label className="block text-sm mb-1" style={{ color: "black" }}>
+          <label className="block text-sm mb-1 text-black dark:text-gray-100">
             Date
           </label>
           <input
             type="text"
-            className="border rounded px-2 py-1"
-            style={{ color: "black", width: isMobile ? "100%" : undefined }}
+            className="border rounded px-2 py-1 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
+            style={{ width: isMobile ? "100%" : undefined }}
             placeholder="e.g. 2024-07-04"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}

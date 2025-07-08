@@ -8,7 +8,11 @@ import TransactionTable from "./TransactionTable";
 import EditTransactionModal from "./EditTransactionModal";
 import DeleteTransactionDialog from "./DeleteTransactionDialog";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
-import { deleteTransaction, fetchTransactions, updateTransaction } from "../../features/transaction/transactionSlice";
+import {
+  deleteTransaction,
+  fetchTransactions,
+  updateTransaction,
+} from "../../features/transaction/transactionSlice";
 
 export default function RecentTransactionTable({
   userId,
@@ -18,7 +22,6 @@ export default function RecentTransactionTable({
   const { token } = useAuthContext();
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.transactions.items);
- 
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,8 +39,6 @@ export default function RecentTransactionTable({
   });
 
   const apiUrl = process.env.REACT_APP_API_URL;
-
-  
 
   const fetchCategories = async () => {
     try {
@@ -57,7 +58,6 @@ export default function RecentTransactionTable({
       fetchCategories();
     }
   }, [token, userId, dispatch]);
-  
 
   const handleEdit = (tx: Transaction) => {
     setForm({
@@ -102,7 +102,7 @@ export default function RecentTransactionTable({
       setLoading(false);
     }
   };
-  
+
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteOpen(true);
@@ -129,12 +129,13 @@ export default function RecentTransactionTable({
       setLoading(false);
     }
   };
-  
 
   return (
     <>
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
+      <div className="bg-white dark:bg-black p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
+          Recent Transactions
+        </h3>
         <TransactionTable
           data={data}
           onEdit={handleEdit}

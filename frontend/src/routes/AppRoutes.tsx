@@ -8,15 +8,18 @@ import NotFound from "../pages/NotFound";
 import LoginPage from "../pages/LoginPage";
 import PrivateRoute from "./PrivateRoute";
 
-
-const AppRoutes = () => (
+interface AppRoutesProps {
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
+} 
+const AppRoutes = ({ darkMode, onToggleDarkMode }: AppRoutesProps) => (
   <Routes>
     {/* Public Route */}
     <Route path="/login" element={<LoginPage />} />
 
     {/* Protected Routes */}
     <Route element={<PrivateRoute />}>
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<Layout darkMode={darkMode} onToggleDarkMode={onToggleDarkMode} />}>
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="transactions" element={<Transactions />} />

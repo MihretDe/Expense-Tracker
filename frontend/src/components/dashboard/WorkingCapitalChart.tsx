@@ -11,7 +11,10 @@ import {
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
-import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
+import {
+  fetchTransactions,
+  Transaction,
+} from "../../features/transaction/transactionSlice";
 
 type ChartData = {
   date: string;
@@ -25,14 +28,13 @@ export default function WorkingCapitalChart({ userId }: { userId?: string }) {
   const dispatch = useAppDispatch();
   const transactions = useAppSelector((state) => state.transactions.items);
 
-
   useEffect(() => {
     if (!token || !userId) return;
     dispatch(
       fetchTransactions({ token, userId, filters: { period: "weekly" } })
     );
   }, [token, userId]);
-  
+
   useEffect(() => {
     const groupedMap = new Map<string, ChartData>();
 
@@ -57,14 +59,17 @@ export default function WorkingCapitalChart({ userId }: { userId?: string }) {
 
     setData(formatted);
   }, [transactions]);
-  
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow h-auto">
-      <h3 className="text-lg font-semibold mb-4">Working Capital</h3>
+    <div className="bg-white dark:bg-black p-4 rounded-lg shadow h-auto border border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
+        Working Capital
+      </h3>
       <div className="w-full h-60">
         {data.length === 0 ? (
-          <p className="text-center text-gray-400 mt-10">No data available</p>
+          <p className="text-center text-gray-400 dark:text-gray-500 mt-10">
+            No data available
+          </p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -81,10 +86,28 @@ export default function WorkingCapitalChart({ userId }: { userId?: string }) {
                   <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <CartesianGrid strokeDasharray="3 3" />
-              <Tooltip />
+              <XAxis
+                dataKey="date"
+                stroke="#8884d8"
+                className="dark:text-gray-100"
+              />
+              <YAxis stroke="#8884d8" className="dark:text-gray-100" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#e5e7eb"
+                className="dark:stroke-gray-700"
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#222",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                }}
+                labelStyle={{
+                  color: "#fff",
+                }}
+              />
               <Area
                 type="monotone"
                 dataKey="income"
