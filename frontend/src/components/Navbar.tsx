@@ -1,6 +1,7 @@
 import { Menu, Bell } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { Sun, Moon } from "lucide-react";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -42,28 +43,16 @@ export default function Navbar({
         <button className="relative p-2 rounded-full hover:bg-gray-100">
           <Bell className="w-5 h-5 text-gray-600" />
         </button>
-        <label className="flex items-center cursor-pointer">
-          <span className="mr-2 text-sm text-gray-700 dark:text-gray-200">
-            Dark Mode
-          </span>
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={onToggleDarkMode}
-            className="toggle-checkbox hidden"
-          />
-          <div
-            className={`w-10 h-5 flex items-center bg-gray-300 dark:bg-gray-600 rounded-full p-1 duration-300 ease-in-out ${
-              darkMode ? "bg-green-400" : ""
-            }`}
-          >
-            <div
-              className={`bg-white dark:bg-gray-200 w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                darkMode ? "translate-x-5" : ""
-              }`}
-            ></div>
-          </div>
-        </label>
+        <button
+          onClick={onToggleDarkMode}
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
+        >
+          {darkMode ? (
+            <Sun className="w-5 h-5 text-yellow-400" />
+          ) : (
+            <Moon className="w-5 h-5 text-gray-600" />
+          )}
+        </button>
 
         <div className="flex items-center gap-2">
           <img
