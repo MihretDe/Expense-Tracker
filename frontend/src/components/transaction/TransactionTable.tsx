@@ -14,28 +14,39 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
 import TransModal from "./TransModal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import {
+  fetchTransactions,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from "../../features/transaction/transactionSlice";
+import { fetchCategories } from "../../features/category/categorySlice";
+import { format } from "date-fns";
 
 type Category = {
   _id: string;
   name: string;
-  // ...other fields if needed
 };
 
 export default function TransactionTable() {
   const { user, token } = useAuthContext();
-  const [mongoUserId, setMongoUserId] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const dispatch = useAppDispatch();
+
+  // Redux state
+  const transactions = useAppSelector((state) => state.transactions.items);
+  const loading = useAppSelector((state) => state.transactions.loading);
+  const categories = useAppSelector((state) => state.categories.items);
+
+  const [mongoUserId, setMongoUserId] = useState<string | null>(null);
 
   // Fetch MongoDB user _id using Auth0 sub
   useEffect(() => {
@@ -43,64 +54,27 @@ export default function TransactionTable() {
       if (!user?.sub || !token) return;
       try {
         const apiUrl = process.env.REACT_APP_API_URL;
-        const res = await axios.get(`${apiUrl}/users/${user.sub}`, {
+        const res = await fetch(`${apiUrl}/users/${user.sub}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setMongoUserId(res.data._id);
-      } catch (err) {
+        const data = await res.json();
+        setMongoUserId(data._id);
+      } catch {
         setMongoUserId(null);
       }
     };
     fetchMongoUserId();
   }, [user?.sub, token]);
 
-  // Fetch transactions for the user
+  // Fetch transactions and categories from Redux
   useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!mongoUserId || !token) return;
-      try {
-        const apiUrl = process.env.REACT_APP_API_URL;
-        console.log("Fetching transactions for user:", mongoUserId);
-        const res = await axios.get(
-          `${apiUrl}/transactions?userId=${mongoUserId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setTransactions(res.data);
-        console.log("Fetched transactions:", res.data);
-      } catch (err) {
-        console.log("Error fetching transactions:", err);
-        setTransactions([]);
-      }
-    };
-    fetchTransactions();
-  }, [mongoUserId, token]);
-
-  // Fetch categories for modal
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const apiUrl = process.env.REACT_APP_API_URL;
-        const params = mongoUserId ? { userId: mongoUserId } : {};
-        const res = await axios.get(`${apiUrl}/categories`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params,
-        });
-        setCategories(res.data || []);
-      } catch (err) {
-        toast.error("Failed to load categories");
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, [token, mongoUserId]);
+    if (mongoUserId && token) {
+      dispatch(fetchTransactions({ token, userId: mongoUserId }));
+      dispatch(fetchCategories({ token, userId: mongoUserId }));
+    }
+  }, [mongoUserId, token, dispatch]);
 
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -108,56 +82,6 @@ export default function TransactionTable() {
   const [dateFilter, setDateFilter] = useState("");
 
   // Open edit modal and populate form
-  const handleEdit = (row: Transaction) => {
-    setForm({
-      title: row.title,
-      amount: row.amount.toString(),
-      type: row.type,
-      category: row.category,
-      date: row.date ? row.date.split("T")[0] : "",
-    });
-    setEditId(row._id);
-    setEditOpen(true);
-  };
-
-  // Delete Transaction handler
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setDeleteOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteId) return;
-    setLoading(true);
-    const apiUrl = process.env.REACT_APP_API_URL;
-    try {
-      await axios.delete(`${apiUrl}/transactions/${deleteId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setDeleteOpen(false);
-      setDeleteId(null);
-      toast.success("Transaction deleted");
-      // Refresh transactions after deleting
-      const res = await axios.get(
-        `${apiUrl}/transactions?userId=${mongoUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTransactions(res.data);
-    } catch (err) {
-      toast.error("Failed to delete transaction");
-      console.log("Error deleting transaction:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add Transaction dialog state
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
@@ -171,34 +95,56 @@ export default function TransactionTable() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const handleEdit = (row: Transaction) => {
+    setForm({
+      title: row.title,
+      amount: row.amount.toString(),
+      type: row.type,
+      category: row.category,
+      date: row.date ? row.date.split("T")[0] : "",
+    });
+    setEditId(row._id);
+    setEditOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId || !token) return;
+    try {
+      await dispatch(deleteTransaction({ token, id: deleteId })).unwrap();
+      setDeleteOpen(false);
+      setDeleteId(null);
+      toast.success("Transaction deleted");
+    } catch {
+      toast.error("Failed to delete transaction");
+    }
+  };
+
   // Add Transaction handler
   const handleAdd = async () => {
-    setLoading(true);
-    const apiUrl = process.env.REACT_APP_API_URL;
-    if (!apiUrl) {
-      toast.error("API URL not set");
-      setLoading(false);
-      return;
-    }
-    if (!mongoUserId) {
+    if (!mongoUserId || !token) {
       toast.error("User not loaded");
-      setLoading(false);
       return;
     }
     try {
-      await axios.post(
-        `${apiUrl}/transactions`,
-        {
-          ...form,
-          amount: Number(form.amount),
-          userId: mongoUserId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await dispatch(
+        createTransaction({
+          token,
+          data: {
+            ...form,
+            amount: Number(form.amount),
+            userId: mongoUserId, // always a string, not undefined
+            type: form.type === "income" ? "income" : "expense",
+            title: form.title,
+            category: form.category,
+            date: form.date,
+          }, // Omit<Transaction, "_id">
+        })
+      ).unwrap();
       setAddOpen(false);
       setForm({
         title: "",
@@ -208,42 +154,29 @@ export default function TransactionTable() {
         date: "",
       });
       toast.success("Transaction added");
-      // Refresh transactions after adding
-      const res = await axios.get(
-        `${apiUrl}/transactions?userId=${mongoUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTransactions(res.data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to add transaction");
-      console.log("Error adding transaction:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
   // Edit Transaction handler
   const handleEditSave = async () => {
-    if (!editId) return;
-    setLoading(true);
-    const apiUrl = process.env.REACT_APP_API_URL;
+    if (!editId || !token) return;
     try {
-      await axios.put(
-        `${apiUrl}/transactions/${editId}`,
-        {
-          ...form,
-          amount: Number(form.amount),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await dispatch(
+        updateTransaction({
+          token,
+          id: editId,
+          data: {
+            ...form,
+            amount: Number(form.amount),
+            type: form.type === "income" ? "income" : "expense",
+            title: form.title,
+            category: form.category,
+            date: form.date,
+          }, // Partial<Transaction>
+        })
+      ).unwrap();
       setEditOpen(false);
       setEditId(null);
       setForm({
@@ -254,21 +187,8 @@ export default function TransactionTable() {
         date: "",
       });
       toast.success("Transaction updated");
-      // Refresh transactions after editing
-      const res = await axios.get(
-        `${apiUrl}/transactions?userId=${mongoUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTransactions(res.data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to update transaction");
-      console.log("Error editing transaction:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -286,8 +206,26 @@ export default function TransactionTable() {
       getTransactionsColumns({
         onEdit: handleEdit,
         onDelete: handleDelete,
-        withTooltip: true, // pass a flag for tooltip support
-      }),
+        withTooltip: true,
+      }).map((col: any) =>
+        (col.accessorKey || col.id || col.field) === "date"
+          ? {
+              ...col,
+              cell: (info: any) => {
+                const dateStr =
+                  info.getValue?.() ?? info.value ?? info.row?.original?.date;
+                if (!dateStr) return "";
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return "";
+                return (
+                  <span style={{ fontSize: 16, color: "black" }}>
+                    {format(date, "yyyy-MM-dd")}
+                  </span>
+                );
+              },
+            }
+          : col
+      ),
     [transactions]
   );
 
@@ -402,7 +340,7 @@ export default function TransactionTable() {
         onClose={() => setAddOpen(false)}
         onSubmit={handleAdd}
         isEdit={false}
-        categories={categories} // <-- pass categories
+        categories={categories}
       />
       <TransModal
         open={editOpen}
@@ -412,7 +350,7 @@ export default function TransactionTable() {
         onClose={() => setEditOpen(false)}
         onSubmit={handleEditSave}
         isEdit={true}
-        categories={categories} // <-- pass categories
+        categories={categories}
       />
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
         <DialogTitle>Delete Transaction</DialogTitle>
