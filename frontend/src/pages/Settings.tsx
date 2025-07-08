@@ -48,12 +48,13 @@ export default function Settings() {
     if (!user?._id || !token) return;
     try {
       await dispatch(
-        updateUserProfile({
-          token,
-          userId: user._id,
-          data,
-        })
+        updateUserProfile({ token, userId: user._id, data })
       ).unwrap();
+
+      // ✅ Immediately re-fetch the latest user after update
+      if (auth0User && typeof auth0User.sub === "string") {
+        await dispatch(fetchUser({ token, auth0Id: auth0User.sub }));
+      }
 
       toast.success("Profile updated");
     } catch {
@@ -62,7 +63,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 px-6 bg-white dark:bg-black rounded-lg shadow border border-gray-200 dark:border-gray-700">
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white dark:bg-black rounded-lg shadow border border-gray-200 dark:border-gray-700 ">
       <h2 className="text-2xl font-semibold mb-1 text-black dark:text-gray-100">
         Account Information
       </h2>
