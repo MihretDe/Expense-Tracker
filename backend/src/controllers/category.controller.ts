@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Category from "../models/Category.js";
 import mongoose from "mongoose";
+import Transaction from "../models/Transaction.js";
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
@@ -38,6 +39,57 @@ export const getCategories = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+export const getCategorySummary = async (req: Request, res: Response) => {
+  const { userId, period } = req.query;
+
+  if (!userId) {
+    res.status(400).json({ message: "userId is required" });
+    return;
+  }
+
+  const now = new Date();
+  let startDate: Date;
+
+  if (period === "monthly") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else {
+    // default to 30 days
+    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  }
+
+  try {
+    const summary = await Transaction.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId as string),
+          date: { $gte: startDate, $lte: now },
+        },
+      },
+      {
+        $group: {
+          _id: { category: "$category", type: "$type" },
+          value: { $sum: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id.category",
+          type: "$_id.type",
+          value: 1,
+        },
+      },
+      { $sort: { value: -1 } },
+    ]);
+    
+
+    res.json(summary);
+    return;
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
 
 export const deleteCategory = async (req: Request, res: Response) => {
   try {

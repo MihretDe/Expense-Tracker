@@ -1,22 +1,46 @@
-export default function BalanceOverviewCard() {
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useAuthContext } from "../../context/AuthContext";
+
+export default function BalanceOverviewCard({userId}: {userId: string | undefined}) {
+  const { token } = useAuthContext();
+  const [total, setTotal] = useState(0);
+  useEffect(() => {
+    const fetchIncomeExpense = async () => {
+      if (!userId) return;
+
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/users/${userId}/balance`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const { totalBalance } = res.data;
+        setTotal(totalBalance || 0);
+      } catch (error) {
+        console.error("❌ Failed to fetch income/expense summary", error);
+      }
+    };
+
+    fetchIncomeExpense();
+  }, [userId, token]);
   return (
     <div
       className="rounded-2xl text-white shadow-lg relative overflow-hidden p-5 h-64 "
       style={{
         background:
           "linear-gradient(160deg, #1f2937 0%, #111827 60%, #10b981 130%)",
-        // width: "100%",
-        // minHeight: "170px",
-        // maxWidth: "320px",
       }}
     >
       <div className="flex justify-between items-start mb-5">
         <div>
           <p className="text-sm text-gray-200">Balance overview</p>
-          <h2 className="text-2xl font-bold mt-2 tracking-tight">$21,847.00</h2>
-          <p className="text-sm mt-3 text-gray-100">
-            Extra savings <strong>$2,992.00</strong>
-          </p>
+          <h2 className="text-2xl font-bold mt-2 tracking-tight">${total}</h2>
+          
           <p className="text-xs text-gray-400">Combination of bank accounts</p>
         </div>
 

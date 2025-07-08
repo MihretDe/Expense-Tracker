@@ -1,94 +1,103 @@
 "use client";
 
-import { Pie, PieChart, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { PieChart, Pie, ResponsiveContainer, Tooltip, Cell } from "recharts";
+import { useAuthContext } from "../../context/AuthContext";
 
-const data01 = [
-  {
-    name: "Group A",
-    value: 400,
-  },
-  {
-    name: "Group B",
-    value: 300,
-  },
-  {
-    name: "Group C",
-    value: 300,
-  },
-  {
-    name: "Group D",
-    value: 200,
-  },
-  {
-    name: "Group E",
-    value: 278,
-  },
-  {
-    name: "Group F",
-    value: 189,
-  },
-];
-const data02 = [
-  {
-    name: "Group A",
-    value: 2400,
-  },
-  {
-    name: "Group B",
-    value: 4567,
-  },
-  {
-    name: "Group C",
-    value: 1398,
-  },
-  {
-    name: "Group D",
-    value: 9800,
-  },
-  {
-    name: "Group E",
-    value: 3908,
-  },
-  {
-    name: "Group F",
-    value: 4800,
-  },
+const COLORS = [
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff8042",
+  "#8dd1e1",
+  "#d0ed57",
+  "#a4de6c",
+  "#ffbb28",
 ];
 
+interface Transaction {
+  amount: number;
+  category: string;
+  type: "income" | "expense";
+}
 
+export default function BudgetPieChart({ userId }: { userId?: string }) {
+  const { token } = useAuthContext();
+  const [chartData, setChartData] = useState<{ name: string; value: number }[]>(
+    []
+  );
 
- function BudgetPieChart() {
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!token || !userId) return;
+
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/transactions/`,
+          {
+            params: { userId },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const transactions: Transaction[] = res.data;
+
+        // Group by category
+        const categoryMap: Record<string, number> = {};
+        transactions.forEach((tx) => {
+          if (!categoryMap[tx.category]) {
+            categoryMap[tx.category] = 0;
+          }
+          categoryMap[tx.category] += tx.amount;
+        });
+
+        const formatted = Object.entries(categoryMap).map(([name, value]) => ({
+          name,
+          value,
+        }));
+
+        setChartData(formatted);
+      } catch (error) {
+        console.error("❌ Failed to fetch transaction data", error);
+      }
+    };
+
+    fetchTransactions();
+  }, [token, userId]);
+
   return (
     <div className="bg-white p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">
       <h3 className="text-lg font-semibold mb-4">Budget Breakdown</h3>
       <div className="w-full h-60">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data01}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={50}
-              fill="#8884d8"
-            />
-            <Pie
-              data={data02}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              fill="#82ca9d"
-              label
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <p className="text-center text-gray-400">No data available</p>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
 }
-
-export default BudgetPieChart;

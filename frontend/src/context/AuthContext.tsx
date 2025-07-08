@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     getAccessTokenSilently,
   } = useAuth0();
 
-  console.log("🔍 Auth0 User:", auth0User);
+
 
   const [token, setToken] = useState<string | null>(
     () => sessionStorage.getItem("auth_token") || null

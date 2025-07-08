@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   AreaChart,
   Area,
@@ -9,30 +10,71 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
+import { useAuthContext } from "../../context/AuthContext";
+import { format } from "date-fns";
 
-const dataSets = {
-  "7d": [
-    { date: "Apr 14", income: 5000, expense: 4800 },
-    { date: "Apr 15", income: 7200, expense: 6300 },
-    { date: "Apr 16", income: 6500, expense: 7500 },
-    { date: "Apr 17", income: 5500, expense: 7000 },
-    { date: "Apr 18", income: 4000, expense: 5600 },
-    { date: "Apr 19", income: 5800, expense: 4300 },
-    { date: "Apr 20", income: 6700, expense: 5100 },
-  ],
-  "30d": Array.from({ length: 30 }, (_, i) => {
-    const day = `Jun ${i + 1}`;
-    return {
-      date: day,
-      income: Math.floor(Math.random() * 5000 + 4000),
-      expense: Math.floor(Math.random() * 4000 + 3000),
-    };
-  }),
+type Transaction = {
+  date: string;
+  type: "income" | "expense";
+  amount: number;
 };
 
-export default function WorkingCapitalChart() {
+function transformData(raw: Transaction[]) {
+  const grouped: Record<string, { income: number; expense: number }> = {};
+
+  for (const tx of raw) {
+    const day = format(new Date(tx.date), "MMM dd"); // e.g., "Jul 07"
+    if (!grouped[day]) {
+      grouped[day] = { income: 0, expense: 0 };
+    }
+    grouped[day][tx.type] += tx.amount;
+  }
+
+  // Convert to array sorted by date
+  return Object.entries(grouped)
+    .map(([date, values]) => ({ date, ...values }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+}
+
+
+export default function WorkingCapitalChart({userId}: {userId: string | undefined}) {
   const [range, setRange] = useState<"7d" | "30d">("7d");
-  const data = dataSets[range];
+  type ChartDataPoint = {
+    date: string;
+    income: number;
+    expense: number;
+  };
+
+  const [data, setData] = useState<ChartDataPoint[]>([]);
+  
+  const { user, token } = useAuthContext();
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      if (!user || !token) return;
+
+      const period = range === "7d" ? "weekly" : "monthly";
+
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/transactions/filter`,
+          {
+            params: { userId, period },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Chart data response:", res.data);
+        const transformed = transformData(res.data);
+        setData(transformed);
+      } catch (err) {
+        console.error("❌ Failed to fetch chart data", err);
+      }
+    };
+
+    fetchChartData();
+  }, [range, user, token]);
 
   const handleExportCSV = () => {
     const rows = [
