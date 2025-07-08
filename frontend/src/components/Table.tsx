@@ -94,14 +94,14 @@ export default function Table<TData>({
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-3 py-1 bg-green-600 text-white rounded disabled:opacity-50"
           >
             Previous
           </button>
           <button
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="px-3 py-1 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-3 py-1 bg-green-600 text-white rounded disabled:opacity-50"
           >
             Next
           </button>
