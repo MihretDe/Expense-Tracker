@@ -20,7 +20,8 @@ import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { useAuthContext } from "../../context/AuthContext";
 import { toast } from "react-toastify";
-
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 type Category = {
   _id: string;
   name: string;
@@ -37,6 +38,8 @@ export default function CategoryTab() {
   const [newCategory, setNewCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [mongoUserId, setMongoUserId] = useState<string | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Fetch categories from API (default + user)
   useEffect(() => {
@@ -128,10 +131,11 @@ export default function CategoryTab() {
       }}
     >
       <Stack
-        direction="row"
+        direction={isMobile ? "column" : "row"}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={isMobile ? "stretch" : "center"}
         mb={3}
+        spacing={isMobile ? 2 : 0}
       >
         <Typography variant="h5" fontWeight="bold">
           Categories
