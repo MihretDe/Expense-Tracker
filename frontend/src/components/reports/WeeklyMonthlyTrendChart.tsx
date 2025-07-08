@@ -11,10 +11,11 @@ import {
 } from "recharts";
 import { useAuthContext } from "../../context/AuthContext";
 import { format } from "date-fns";
-import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
+import {
+  fetchTransactions,
+  Transaction,
+} from "../../features/transaction/transactionSlice";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
-
-
 
 type ChartDataPoint = {
   date: string;
@@ -80,22 +81,20 @@ export default function WorkingCapitalChart({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow w-full h-auto">
+    <div className="bg-white dark:bg-black p-4 rounded-lg shadow w-full h-auto border border-gray-200 dark:border-gray-700">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-4">
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-lg font-semibold text-black dark:text-gray-100">
           {range === "7d" ? "Weekly" : "Monthly"} Income vs Expense
         </h3>
-
         <div className="flex gap-2">
           <select
             value={range}
             onChange={(e) => setRange(e.target.value as "7d" | "30d")}
-            className="border px-2 py-1 rounded text-sm"
+            className="border px-2 py-1 rounded text-sm bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
           </select>
-
           <button
             onClick={handleExportCSV}
             className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
@@ -118,21 +117,37 @@ export default function WorkingCapitalChart({
             </linearGradient>
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="#e5e7eb"
+            className="dark:stroke-gray-700"
+          />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 12, fill: "#222" }}
+            className="dark:text-gray-100"
+            stroke="#8884d8"
+          />
           <YAxis
-            tick={{ fontSize: 12 }}
+            tick={{ fontSize: 12, fill: "#222" }}
+            className="dark:text-gray-100"
             domain={[0, "auto"]}
             tickFormatter={(value) => `${value / 1000}K`}
+            stroke="#8884d8"
           />
           <Tooltip
             contentStyle={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
+              background: "#222",
+              color: "#fff",
+              border: "none",
               borderRadius: "8px",
               fontSize: "0.875rem",
             }}
-            labelClassName="font-medium text-gray-900"
+            labelStyle={{
+              color: "#fff",
+            }}
+            labelClassName="font-medium text-gray-900 dark:text-gray-100"
             formatter={(value: number) => `$${value.toLocaleString()}`}
           />
           <Legend
@@ -140,7 +155,10 @@ export default function WorkingCapitalChart({
             align="center"
             iconType="circle"
             iconSize={10}
-            wrapperStyle={{ marginBottom: 10 }}
+            wrapperStyle={{ marginBottom: 10, color: "inherit" }}
+            formatter={(value: string) => (
+              <span className="text-black dark:text-gray-100">{value}</span>
+            )}
           />
           <Area
             type="monotone"

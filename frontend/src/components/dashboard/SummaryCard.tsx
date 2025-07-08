@@ -23,13 +23,17 @@ export default function SummaryCard({
 
   return (
     <div
-      className={`flex items-center gap-4 p-4 rounded-lg shadow ${
-        active ? "bg-gray-800 text-white" : "bg-gray-50 text-gray-800"
+      className={`flex items-center gap-4 p-4 rounded-lg shadow border ${
+        active
+          ? "bg-gray-800 text-white border-gray-700"
+          : "bg-gray-50 text-gray-800 dark:bg-black dark:text-gray-100 border-gray-200 dark:border-gray-700"
       }`}
     >
       <div
-        className={`rounded-full p-3 ${
-          active ? "bg-white text-gray-900" : "bg-gray-200 text-gray-800"
+        className={`rounded-full p-3 border ${
+          active
+            ? "bg-white text-gray-900 border-gray-300"
+            : "bg-gray-200 text-gray-800 dark:bg-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
         }`}
       >
         <Icon className="w-6 h-6" />
@@ -37,7 +41,7 @@ export default function SummaryCard({
       <div>
         <h3
           className={`text-sm font-medium ${
-            active ? "text-gray-300" : "text-gray-500"
+            active ? "text-gray-300" : "text-gray-500 dark:text-gray-400"
           }`}
         >
           {label}

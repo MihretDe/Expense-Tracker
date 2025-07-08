@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <div
         className={clsx(
-          "fixed top-0 left-0 z-40 min-h-screen w-64 bg-white border-r p-4 flex flex-col justify-between transform transition-transform duration-300",
+          "fixed top-0 left-0 z-40 min-h-screen w-64 border-r p-4 flex flex-col justify-between transform transition-transform duration-300 bg-white dark:bg-black",
           {
             "-translate-x-full": !isOpen,
             "translate-x-0": isOpen,
@@ -71,7 +71,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ))}
           </nav>
         </div>
-        <LogoutButton/>
+        <LogoutButton />
       </div>
     </>
   );

@@ -42,7 +42,6 @@ export default function Settings() {
       reset({ ...user, date: formattedDate });
     }
   }, [user, reset]);
-  
 
   // Submit handler
   const onSubmit = async (data: UserProfile) => {
@@ -61,63 +60,74 @@ export default function Settings() {
       toast.error("Failed to update profile");
     }
   };
-  
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 px-6">
-      <h2 className="text-2xl font-semibold mb-1">Account Information</h2>
-      <p className="text-sm text-gray-500 mb-6">
+    <div className="max-w-3xl mx-auto mt-10 px-6 bg-white dark:bg-black rounded-lg shadow border border-gray-200 dark:border-gray-700">
+      <h2 className="text-2xl font-semibold mb-1 text-black dark:text-gray-100">
+        Account Information
+      </h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Update your account information
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1">First Name</label>
+            <label className="block text-sm mb-1 text-black dark:text-gray-100">
+              First Name
+            </label>
             <input
               {...register("name", { required: true })}
               type="text"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
               placeholder="First Name"
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1">Last Name</label>
+            <label className="block text-sm mb-1 text-black dark:text-gray-100">
+              Last Name
+            </label>
             <input
               {...register("lastName")}
               type="text"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
               placeholder="Last Name"
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1">Date of Birth</label>
+            <label className="block text-sm mb-1 text-black dark:text-gray-100">
+              Date of Birth
+            </label>
             <input
               {...register("date")}
               type="date"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1">Mobile Number</label>
+            <label className="block text-sm mb-1 text-black dark:text-gray-100">
+              Mobile Number
+            </label>
             <input
               {...register("mobilePhone")}
               type="tel"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-gray-100 border-gray-300 dark:border-gray-700"
               placeholder="+1234567890"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm mb-1">Email (not editable)</label>
+            <label className="block text-sm mb-1 text-black dark:text-gray-100">
+              Email (not editable)
+            </label>
             <input
               {...register("email")}
               type="email"
               disabled
-              className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+              className="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border-gray-300 dark:border-gray-700"
             />
           </div>
         </div>

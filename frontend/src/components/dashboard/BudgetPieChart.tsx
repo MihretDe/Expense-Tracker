@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { PieChart, Pie, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { useAuthContext } from "../../context/AuthContext";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
-import { fetchTransactions, Transaction } from "../../features/transaction/transactionSlice";
-
+import {
+  fetchTransactions,
+  Transaction,
+} from "../../features/transaction/transactionSlice";
 
 const COLORS = [
   "#8884d8",
@@ -55,11 +57,15 @@ export default function BudgetPieChart({ userId }: { userId?: string }) {
   }, [transactions]);
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">
-      <h3 className="text-lg font-semibold mb-4">Budget Breakdown</h3>
+    <div className="bg-white dark:bg-black p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto border border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
+        Budget Breakdown
+      </h3>
       <div className="w-full h-60">
         {chartData.length === 0 ? (
-          <p className="text-center text-gray-400">No data available</p>
+          <p className="text-center text-gray-400 dark:text-gray-500">
+            No data available
+          </p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -70,7 +76,11 @@ export default function BudgetPieChart({ userId }: { userId?: string }) {
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
-                label
+                label={({ name }) => (
+                  <span className="text-xs text-black dark:text-gray-100">
+                    {name}
+                  </span>
+                )}
               >
                 {chartData.map((entry, index) => (
                   <Cell
@@ -79,7 +89,22 @@ export default function BudgetPieChart({ userId }: { userId?: string }) {
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#222",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                }}
+                wrapperStyle={{
+                  color: "inherit",
+                }}
+                labelStyle={{
+                  color: "#fff",
+                }}
+                // Let recharts use default if not in dark mode
+                // You can further enhance this with a darkMode prop/context if needed
+              />
             </PieChart>
           </ResponsiveContainer>
         )}

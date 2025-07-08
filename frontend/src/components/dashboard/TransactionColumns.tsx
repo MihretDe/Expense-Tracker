@@ -55,7 +55,9 @@ export function getTransactionsColumns({
       header: "date",
       accessorKey: "date",
       cell: (info) => (
-        <div className="text-center">{String(info.getValue()).slice(0, 10)}</div>
+        <div className="text-center">
+          {String(info.getValue()).slice(0, 10)}
+        </div>
       ),
     },
 
@@ -76,7 +78,10 @@ export function getTransactionsColumns({
                   <IconButton
                     size="small"
                     onClick={() => onEdit?.(emp)}
-                    sx={{ color: "black" }}
+                    sx={{
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#fff" : "black",
+                    }}
                   >
                     <EditIcon fontSize="medium" />
                   </IconButton>
@@ -85,7 +90,10 @@ export function getTransactionsColumns({
                   <IconButton
                     size="small"
                     onClick={() => onDelete?.(emp._id)}
-                    sx={{ color: "black" }}
+                    sx={{
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#fff" : "black",
+                    }}
                   >
                     <DeleteIcon fontSize="medium" />
                   </IconButton>
@@ -96,14 +104,20 @@ export function getTransactionsColumns({
                 <IconButton
                   size="small"
                   onClick={() => onEdit?.(emp)}
-                  sx={{ color: "black" }}
+                  sx={{
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#fff" : "black",
+                  }}
                 >
                   <EditIcon fontSize="medium" />
                 </IconButton>
                 <IconButton
                   size="small"
                   onClick={() => onDelete?.(emp._id)}
-                  sx={{ color: "black" }}
+                  sx={{
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#fff" : "black",
+                  }}
                 >
                   <DeleteIcon fontSize="medium" />
                 </IconButton>
