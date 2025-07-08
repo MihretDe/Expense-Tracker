@@ -55,7 +55,7 @@ export function getTransactionsColumns({
       header: "date",
       accessorKey: "date",
       cell: (info) => (
-        <div className="text-center">{String(info.getValue())}</div>
+        <div className="text-center">{String(info.getValue()).slice(0, 10)}</div>
       ),
     },
 

@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 
 export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const { title, amount, type, category, userId } = req.body;
+    const { title, amount, type, category, userId, date } = req.body;
 
     const transaction = new Transaction({
       title,
@@ -12,6 +12,7 @@ export const createTransaction = async (req: Request, res: Response) => {
       type,
       category,
       userId: new mongoose.Types.ObjectId(userId), // ensure ObjectId
+      date: date ? new Date(date) : undefined, // <-- use provided date if present
     });
 
     await transaction.save();
@@ -148,7 +149,7 @@ export const deleteTransaction = async (req: Request, res: Response) => {
     const deleted = await Transaction.findByIdAndDelete(id);
 
     if (!deleted) {
-       res.status(404).json({ message: "Transaction not found" });
+      res.status(404).json({ message: "Transaction not found" });
     }
 
     res.status(200).json({ message: "Transaction deleted" });
