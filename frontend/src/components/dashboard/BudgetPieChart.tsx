@@ -57,7 +57,7 @@ export default function BudgetPieChart({ userId }: { userId?: string }) {
   }, [transactions]);
 
   return (
-    <div className="bg-white dark:bg-black p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto ">
       <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
         Budget Breakdown
       </h3>

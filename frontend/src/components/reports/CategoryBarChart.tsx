@@ -28,7 +28,7 @@ export default function CategoryBarChart({
   }, [userId, token, dispatch]);
 
   return (
-    <div className="bg-white dark:bg-black p-4 rounded shadow md:h-64 border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-900 p-4 rounded shadow md:h-64 ">
       <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
         Monthly Transaction by Category
       </h3>

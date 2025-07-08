@@ -63,7 +63,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white dark:bg-black rounded-lg shadow border border-gray-200 dark:border-gray-700 ">
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white dark:bg-gray-900 rounded-lg shadow  ">
       <h2 className="text-2xl font-semibold mb-1 text-black dark:text-gray-100">
         Account Information
       </h2>

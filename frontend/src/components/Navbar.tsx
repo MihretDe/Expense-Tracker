@@ -39,15 +39,15 @@ export default function Navbar({
 
   return (
     <div
-      className={`w-full h-16 px-6 border-b flex justify-between items-center transition-colors duration-300 ${
-        darkMode ? "bg-black" : "bg-white"
+      className={`w-full h-16 px-6 border-b dark:border-gray-700 flex justify-between items-center transition-colors duration-300 ${
+        darkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
       <div className="flex items-center gap-4">
         <button className="md:hidden" onClick={onToggleSidebar}>
-          <Menu className="w-6 h-6 text-gray-700" />
+          <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         </button>
-        <h2 className="text-xl font-semibold text-gray-800">{pageTitle}</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{pageTitle}</h2>
       </div>
 
       <div className="flex items-center gap-4">
@@ -68,7 +68,7 @@ export default function Navbar({
             alt="User"
             className="w-8 h-8 rounded-full"
           />
-          <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">
             {userLoading || !user?.name
               ? "Loading..."
               : `${user.name} ${user.lastName ?? ""}`}

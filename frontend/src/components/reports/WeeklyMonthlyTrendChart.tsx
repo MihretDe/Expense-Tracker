@@ -81,7 +81,7 @@ export default function WorkingCapitalChart({
   };
 
   return (
-    <div className="bg-white dark:bg-black p-4 rounded-lg shadow w-full h-auto border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow w-full h-auto ">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-4">
         <h3 className="text-lg font-semibold text-black dark:text-gray-100">
           {range === "7d" ? "Weekly" : "Monthly"} Income vs Expense
