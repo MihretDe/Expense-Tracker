@@ -22,9 +22,12 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
 
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../../frontend/build");
+  console.log("Serving frontend from:", frontendPath);
   app.use(express.static(frontendPath));
   app.get("*", (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
