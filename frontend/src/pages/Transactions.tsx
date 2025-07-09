@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 import TransactionTable from "../components/transaction/TransactionTable";
 import CategoryTab from "../components/transaction/CategoryTab";
@@ -6,7 +6,7 @@ import CategoryTab from "../components/transaction/CategoryTab";
 
 export default function TransactionPage() {
 
-  const [tab, setTab] = React.useState(0);
+  const [tab, setTab] = useState(0);
 
   return (
     <Box sx={{ width: "100%", height: 600 }}>

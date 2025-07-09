@@ -7,16 +7,28 @@ import transactionRoutes from "./routes/transaction.routes.js";
 import userRoutes from "./routes/user.routes.js";
 // import { seedDefaultCategories } from "./utils/seedDefaultCategories.js"; // ✅ added
 
+import path from "path";
+
 dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:3000"
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
+const __dirname = path.resolve();
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/build")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
+  });
+}
 
 const startServer = async () => {
   try {
