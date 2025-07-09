@@ -14,7 +14,7 @@ import connectDB from "./config/db.js";
 import categoryRoutes from "./routes/category.routes.js";
 import transactionRoutes from "./routes/transaction.routes.js";
 import userRoutes from "./routes/user.routes.js";
-// import { seedDefaultCategories } from "./utils/seedDefaultCategories.js"; // ✅ added
+// import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 import path from "path";
 dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -25,19 +25,22 @@ app.use(cors({
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
-if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/build")));
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
-    });
-}
+console.log("NODE_ENV:", process.env.NODE_ENV);
+// register API routes first
+app.use("/api/categories", categoryRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/users", userRoutes);
+// serve frontend last
+const frontendPath = path.join(__dirname, "../../frontend/build");
+console.log("Serving frontend from:", frontendPath);
+app.use(express.static(frontendPath));
+app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+});
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield connectDB();
-        // await seedDefaultCategories(); // ✅ seed default categories (no deletion)
-        app.use("/api/categories", categoryRoutes);
-        app.use("/api/transactions", transactionRoutes);
-        app.use("/api/users", userRoutes);
+        // await seedDefaultCategories();
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
