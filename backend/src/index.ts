@@ -5,7 +5,7 @@ import connectDB from "./config/db.js";
 import categoryRoutes from "./routes/category.routes.js";
 import transactionRoutes from "./routes/transaction.routes.js";
 import userRoutes from "./routes/user.routes.js";
-// import { seedDefaultCategories } from "./utils/seedDefaultCategories.js"; // ✅ added
+// import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 
 import path from "path";
 
@@ -24,25 +24,23 @@ const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
+// register API routes first
+app.use("/api/categories", categoryRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/users", userRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "../../frontend/build");
-  console.log("Serving frontend from:", frontendPath);
-  app.use(express.static(frontendPath));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
-  });
-}
-
+// serve frontend last
+const frontendPath = path.join(__dirname, "../../frontend/build");
+console.log("Serving frontend from:", frontendPath);
+app.use(express.static(frontendPath));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
 
 const startServer = async () => {
   try {
     await connectDB();
-    // await seedDefaultCategories(); // ✅ seed default categories (no deletion)
-    app.use("/api/categories", categoryRoutes);
-    app.use("/api/transactions", transactionRoutes);
-    app.use("/api/users", userRoutes);
-
+    // await seedDefaultCategories();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
