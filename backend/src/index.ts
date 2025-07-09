@@ -34,7 +34,6 @@ app.use("/api/transactions", transactionRoutes);
 console.log("Registering user routes...");
 app.use("/api/users", userRoutes);
 
-
 // serve frontend last
 const frontendPath = path.join(__dirname, "../../frontend/build");
 console.log("Serving frontend from:", frontendPath);
@@ -56,4 +55,5 @@ const startServer = async () => {
   }
 };
 
+startServer();
 startServer();
