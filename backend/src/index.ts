@@ -20,7 +20,7 @@ app.use(
 );
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000; // <-- Use 10000 as default for Render compatibility
 const __dirname = path.resolve();
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
