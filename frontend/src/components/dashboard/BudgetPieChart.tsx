@@ -20,6 +20,20 @@ const COLORS = [
   "#ffbb28",
 ];
 
+export const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-black text-white p-2 rounded shadow text-sm">
+        <p className="font-medium">
+          {payload[0].name} : ${payload[0].value}
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 export default function BudgetPieChart({ userId }: { userId?: string }) {
   const { token } = useAuthContext();
   const dispatch = useAppDispatch();
@@ -89,22 +103,7 @@ export default function BudgetPieChart({ userId }: { userId?: string }) {
                   />
                 ))}
               </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#222",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                }}
-                wrapperStyle={{
-                  color: "inherit",
-                }}
-                labelStyle={{
-                  color: "#fff",
-                }}
-                // Let recharts use default if not in dark mode
-                // You can further enhance this with a darkMode prop/context if needed
-              />
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
         )}
