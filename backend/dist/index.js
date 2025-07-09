@@ -20,7 +20,7 @@ dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
 }));
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
@@ -37,7 +37,8 @@ app.use("/api/users", userRoutes);
 const frontendPath = path.join(__dirname, "../../frontend/build");
 console.log("Serving frontend from:", frontendPath);
 app.use(express.static(frontendPath));
-app.get("*", (req, res) => {
+// Only match non-API routes for frontend
+app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
 });
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -53,5 +54,4 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         process.exit(1);
     }
 });
-startServer();
 startServer();

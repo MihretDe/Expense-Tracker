@@ -15,7 +15,7 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
   })
 );
 app.use(express.json());
@@ -38,7 +38,8 @@ app.use("/api/users", userRoutes);
 const frontendPath = path.join(__dirname, "../../frontend/build");
 console.log("Serving frontend from:", frontendPath);
 app.use(express.static(frontendPath));
-app.get("*", (req, res) => {
+// Only match non-API routes for frontend
+app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
@@ -55,5 +56,4 @@ const startServer = async () => {
   }
 };
 
-startServer();
 startServer();
