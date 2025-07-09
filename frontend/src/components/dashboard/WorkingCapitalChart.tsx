@@ -63,7 +63,7 @@ export default function WorkingCapitalChart({ userId }: { userId?: string }) {
   return (
     <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md h-auto ">
       <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
-        Working Capital
+        Weekly Working Capital
       </h3>
       <div className="w-full h-60">
         {data.length === 0 ? (

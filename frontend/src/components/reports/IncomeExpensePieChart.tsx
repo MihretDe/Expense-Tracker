@@ -7,6 +7,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useAppSelector } from "../../hooks/useRedux";
+import { CustomTooltip } from "../dashboard/BudgetPieChart";
 
 const COLORS = ["#22c55e", "#ff0033"];
 
@@ -41,17 +42,8 @@ export default function IncomeExpensePieChart() {
               <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#222",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-            }}
-            labelStyle={{
-              color: "#fff",
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} />
+
           <Legend
             wrapperStyle={{
               color: "inherit",
