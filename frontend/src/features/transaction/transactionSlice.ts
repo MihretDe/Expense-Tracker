@@ -14,15 +14,19 @@ export interface Transaction {
 
 interface TransactionState {
   items: Transaction[];
+  recent: Transaction[];
   loading: boolean;
   error: string | null;
 }
 
+
 const initialState: TransactionState = {
   items: [],
+  recent: [],
   loading: false,
   error: null,
 };
+
 
 export const createTransaction = createAsyncThunk(
   "transactions/create",
@@ -73,6 +77,35 @@ export const fetchTransactions = createAsyncThunk(
     }
   }
 );
+
+export const fetchRecentTransactions = createAsyncThunk(
+  "transactions/fetchRecent",
+  async (
+    {
+      token,
+      userId,
+      limit = 5,
+    }: { token: string; userId: string; limit?: number },
+    thunkAPI
+  ) => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/transactions/recent`,
+        {
+          params: { userId, limit },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Recent transactions fetched:", res.data);
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Fetch recent failed"
+      );
+    }
+  }
+);
+
   
 
 export const updateTransaction = createAsyncThunk(
@@ -147,7 +180,20 @@ const transactionSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
+      .addCase(fetchRecentTransactions.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(
+        fetchRecentTransactions.fulfilled,
+        (state, action: PayloadAction<Transaction[]>) => {
+          state.loading = false;
+          state.recent = action.payload;
+        }
+      )
+      .addCase(fetchRecentTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })      
       .addCase(
         createTransaction.fulfilled,
         (state, action: PayloadAction<Transaction>) => {

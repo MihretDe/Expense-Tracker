@@ -10,7 +10,7 @@ import DeleteTransactionDialog from "./DeleteTransactionDialog";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 import {
   deleteTransaction,
-  fetchTransactions,
+  fetchRecentTransactions,
   updateTransaction,
 } from "../../features/transaction/transactionSlice";
 
@@ -21,7 +21,7 @@ export default function RecentTransactionTable({
 }) {
   const { token } = useAuthContext();
   const dispatch = useAppDispatch();
-  const data = useAppSelector((state) => state.transactions.items);
+  const data = useAppSelector((state) => state.transactions.recent);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,9 @@ export default function RecentTransactionTable({
 
   useEffect(() => {
     if (token && userId) {
-      dispatch(fetchTransactions({ token, userId, filters: { limit: 5 } }));
+      if (userId) {
+        dispatch(fetchRecentTransactions({ token, userId, limit: 5 }));
+      }
       fetchCategories();
     }
   }, [token, userId, dispatch]);
@@ -93,9 +95,9 @@ export default function RecentTransactionTable({
       setEditId(null);
 
       // Refresh list after update
-      dispatch(
-        fetchTransactions({ token, userId: userId!, filters: { limit: 5 } })
-      );
+      if (userId) {
+        dispatch(fetchRecentTransactions({ token, userId, limit: 5 }));
+      }
     } catch {
       toast.error("Failed to update transaction");
     } finally {
@@ -120,9 +122,9 @@ export default function RecentTransactionTable({
       setDeleteId(null);
 
       // Refresh list after delete
-      dispatch(
-        fetchTransactions({ token, userId: userId!, filters: { limit: 5 } })
-      );
+      if (userId) {
+        dispatch(fetchRecentTransactions({ token, userId, limit: 5 }));
+      }
     } catch {
       toast.error("Failed to delete transaction");
     } finally {
