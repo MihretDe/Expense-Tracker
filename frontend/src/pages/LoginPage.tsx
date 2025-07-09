@@ -25,7 +25,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right side image */}
-      <div className="md:w-1/2 min-h-screen ">
+      <div className="md:w-1/2 min-h-screen hidden md:block">
         <img
           src="/money.svg"
           alt="Money Illustration"

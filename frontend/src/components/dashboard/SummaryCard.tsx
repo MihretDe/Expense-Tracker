@@ -23,10 +23,10 @@ export default function SummaryCard({
 
   return (
     <div
-      className={`flex items-center gap-4 p-4 rounded-lg shadow border ${
+      className={`flex items-center gap-4 p-4 rounded-lg shadow  ${
         active
-          ? "bg-gray-800 text-white border-gray-700"
-          : "bg-gray-50 text-gray-800 dark:bg-black dark:text-gray-100 border-gray-200 dark:border-gray-700"
+          ? "bg-gray-800 text-white "
+          : "bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-100 border-gray-200 "
       }`}
     >
       <div

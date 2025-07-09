@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <div
         className={clsx(
-          "fixed top-0 left-0 z-40 min-h-screen w-64 border-r p-4 flex flex-col justify-between transform transition-transform duration-300 bg-white dark:bg-black",
+          "fixed top-0 left-0 z-40 min-h-screen w-64 border-r dark:border-gray-700 p-4 flex flex-col justify-between transform transition-transform duration-300 bg-white dark:bg-gray-900",
           {
             "-translate-x-full": !isOpen,
             "translate-x-0": isOpen,
@@ -60,8 +60,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   clsx(
                     "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium",
                     isActive
-                      ? "bg-lime-400 text-white"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-lime-400 text-white  "
+                      : "text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300 "
                   )
                 }
               >

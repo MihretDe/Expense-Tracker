@@ -132,7 +132,7 @@ export default function RecentTransactionTable({
 
   return (
     <>
-      <div className="bg-white dark:bg-black p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow ">
         <h3 className="text-lg font-semibold mb-4 text-black dark:text-gray-100">
           Recent Transactions
         </h3>
