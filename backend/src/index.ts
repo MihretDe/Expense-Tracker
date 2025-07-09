@@ -25,9 +25,15 @@ const __dirname = path.resolve();
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
 // register API routes first
+console.log("Registering category routes...");
 app.use("/api/categories", categoryRoutes);
+
+console.log("Registering transaction routes...");
 app.use("/api/transactions", transactionRoutes);
+
+console.log("Registering user routes...");
 app.use("/api/users", userRoutes);
+
 
 // serve frontend last
 const frontendPath = path.join(__dirname, "../../frontend/build");
